@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quote {{ quote.quote_number }} - SemiSales AI Agent</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 20px 40px; }
+        .header h1 { font-size: 24px; }
+        .header .subtitle { font-size: 13px; opacity: 0.7; margin-top: 4px; }
+
+        .nav { background: #16213e; padding: 0 40px; display: flex; gap: 0; }
+        .nav a { color: rgba(255,255,255,0.7); text-decoration: none; padding: 12px 20px; font-size: 14px; border-bottom: 2px solid transparent; }
+        .nav a:hover { color: white; border-bottom-color: #4fc3f7; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px 40px; }
+
+        .breadcrumb { font-size: 13px; color: #666; margin-bottom: 20px; }
+        .breadcrumb a { color: #1976d2; text-decoration: none; }
+
+        .section { background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .section h2 { font-size: 18px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0; }
+
+        .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+        .info-item .label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+        .info-item .value { font-size: 15px; font-weight: 600; margin-top: 4px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        th { text-align: left; padding: 10px 12px; font-size: 12px; text-transform: uppercase; color: #666; border-bottom: 2px solid #e0e0e0; }
+        td { padding: 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+        .badge-green { background: #e8f5e9; color: #2e7d32; }
+        .badge-amber { background: #fff8e1; color: #f57f17; }
+        .badge-red { background: #fce4ec; color: #c62828; }
+
+        .email-preview { background: #fafafa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin-top: 12px; max-height: 500px; overflow-y: auto; }
+
+        .email-editor { width: 100%; min-height: 400px; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; font-family: inherit; font-size: 14px; resize: vertical; }
+
+        .actions { display: flex; gap: 12px; margin-top: 20px; }
+        .btn { display: inline-block; padding: 10px 24px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+        .btn-success { background: #2e7d32; color: white; }
+        .btn-success:hover { background: #1b5e20; }
+        .btn-primary { background: #1976d2; color: white; }
+        .btn-primary:hover { background: #1565c0; }
+        .btn-danger { background: #d32f2f; color: white; }
+        .btn-danger:hover { background: #b71c1c; }
+        .btn-outline { background: white; color: #666; border: 1px solid #ccc; }
+        .btn-outline:hover { background: #f5f5f5; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .alert { padding: 14px 20px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; display: none; }
+        .alert-success { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+        .alert-error { background: #fce4ec; color: #c62828; border: 1px solid #ef9a9a; }
+
+        .tab-buttons { display: flex; gap: 0; margin-bottom: -1px; position: relative; z-index: 1; }
+        .tab-btn { padding: 10px 20px; background: #f5f5f5; border: 1px solid #e0e0e0; border-bottom: none; cursor: pointer; font-size: 13px; font-weight: 600; border-radius: 8px 8px 0 0; }
+        .tab-btn.active { background: white; border-bottom-color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>SemiSales AI Agent</h1>
+        <div class="subtitle">Company B International & Company A</div>
+    </div>
+
+    <div class="nav">
+        <a href="/">Dashboard</a>
+        <a href="/emails">All Emails</a>
+        <a href="/quotations">Quotations</a>
+        <a href="/orders">Orders</a>
+        <a href="/vendors">Vendors</a>
+        <a href="/leads">Leads</a>
+    </div>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="/">Dashboard</a> / <a href="/quotations">Quotations</a> / {{ quote.quote_number }}
+        </div>
+
+        <div id="alert" class="alert"></div>
+
+        <div class="section">
+            <h2>Quotation: {{ quote.quote_number }}</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="label">Customer</div>
+                    <div class="value">{{ quote.customer_name }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Company</div>
+                    <div class="value">{{ quote.customer_company or '-' }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Email</div>
+                    <div class="value">{{ quote.customer_email }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Account</div>
+                    <div class="value">{{ quote.account | upper }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Currency</div>
+                    <div class="value">{{ quote.currency }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Status</div>
+                    <div class="value">{{ quote.status.value | replace('_', ' ') | upper }}</div>
+                </div>
+                {% if quote.negotiation_round and quote.negotiation_round > 0 %}
+                <div class="info-item">
+                    <div class="label">Negotiation Round</div>
+                    <div class="value" style="color: #e65100;">Round {{ quote.negotiation_round }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if quote.status.value == 'awaiting_pricing' %}
+        <div class="section" style="border: 2px solid #f57c00;">
+            <h2 style="color: #e65100;">Submit Pricing (Purchase Team / Quote Analyst)</h2>
+            <p style="color: #666; font-size: 13px; margin-bottom: 16px;">
+                Enter unit price, lead time, and MOQ for each item. Once submitted, the AI agent will auto-draft the quotation email for salesperson approval.
+            </p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>MPN</th>
+                        <th>Manufacturer</th>
+                        <th>Qty Requested</th>
+                        <th>Line Status</th>
+                        <th>Unit Price ({{ quote.currency }})</th>
+                        <th>MOQ</th>
+                        <th>Lead Time</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in bom_items %}
+                    <tr>
+                        <td><strong>{{ item.mpn }}</strong></td>
+                        <td>{{ item.manufacturer or '-' }}</td>
+                        <td>{{ item.quantity or '-' }}</td>
+                        <td>
+                            {% if item.line_status == 'green' %}
+                                <span class="badge badge-green">AUTHORIZED</span>
+                            {% elif item.line_status == 'amber' %}
+                                <span class="badge badge-amber">ALTERNATIVE</span>
+                            {% else %}
+                                <span class="badge badge-red">NO MATCH</span>
+                            {% endif %}
+                        </td>
+                        <td><input type="number" step="0.0001" class="price-input" data-mpn="{{ item.mpn }}" placeholder="0.00" style="width: 100px; padding: 6px; border: 1px solid #ddd; border-radius: 4px;"></td>
+                        <td><input type="number" class="moq-input" data-mpn="{{ item.mpn }}" placeholder="MOQ" style="width: 80px; padding: 6px; border: 1px solid #ddd; border-radius: 4px;"></td>
+                        <td><input type="text" class="lead-time-input" data-mpn="{{ item.mpn }}" placeholder="e.g. 4-6 weeks" style="width: 110px; padding: 6px; border: 1px solid #ddd; border-radius: 4px;"></td>
+                        <td><input type="text" class="notes-input" data-mpn="{{ item.mpn }}" placeholder="Optional" style="width: 130px; padding: 6px; border: 1px solid #ddd; border-radius: 4px;"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div style="margin-top: 16px;">
+                <label style="font-size: 13px; color: #666;">Overall Pricing Notes (optional):</label>
+                <textarea id="pricing-notes" rows="2" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; margin-top: 4px;" placeholder="e.g. Pricing valid for 30 days, minimum order value $500..."></textarea>
+            </div>
+            <div style="margin-top: 16px;">
+                <label style="font-size: 13px; color: #666;">Submitted by:</label>
+                <input type="text" id="submitted-by" value="purchase_team" style="padding: 8px; border: 1px solid #ddd; border-radius: 6px; width: 200px; margin-left: 8px;">
+            </div>
+            <div class="actions">
+                <button class="btn btn-success" onclick="submitPricing()">Submit Pricing & Generate Quotation</button>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if bom_items and quote.status.value != 'awaiting_pricing' %}
+        <div class="section">
+            <h2>BOM Items (Line Card Check)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>MPN</th>
+                        <th>Manufacturer</th>
+                        <th>Qty</th>
+                        <th>Line Status</th>
+                        <th>Unit Price</th>
+                        <th>Lead Time</th>
+                        <th>Alternative Brand</th>
+                        <th>Alternative MPN</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in bom_items %}
+                    {% set item_pricing = namespace(price='-', lead_time='-') %}
+                    {% if quote.line_items %}
+                        {% for li in quote.line_items %}
+                            {% if li.mpn == item.mpn %}
+                                {% set item_pricing.price = li.unit_price if li.unit_price else '-' %}
+                                {% set item_pricing.lead_time = li.lead_time if li.lead_time else '-' %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                    <tr>
+                        <td><strong>{{ item.mpn }}</strong></td>
+                        <td>{{ item.manufacturer or '-' }}</td>
+                        <td>{{ item.quantity or '-' }}</td>
+                        <td>
+                            {% if item.line_status == 'green' %}
+                                <span class="badge badge-green">AUTHORIZED</span>
+                            {% elif item.line_status == 'amber' %}
+                                <span class="badge badge-amber">ALTERNATIVE</span>
+                            {% else %}
+                                <span class="badge badge-red">NO MATCH</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ item_pricing.price }}</td>
+                        <td>{{ item_pricing.lead_time }}</td>
+                        <td>{{ item.authorized_brand or '-' }}</td>
+                        <td>{{ item.alternative_mpn or '-' }}</td>
+                        <td>{{ item.alternative_notes or '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if rfqs or vquotes %}
+        <div class="section">
+            <h2 style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Vendors — RFQs sent &amp; cost quotes for this enquiry</span>
+                <a href="/sourcing/{{ quote.id }}" class="btn btn-outline" style="padding:6px 14px; font-size:12px;">View full sourcing &amp; margin →</a>
+            </h2>
+
+            <h3 style="font-size:14px; color:#666; margin:8px 0 6px;">RFQ sent to {{ rfqs|length }} vendor{{ 's' if rfqs|length != 1 else '' }}</h3>
+            {% if rfqs %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Vendor</th>
+                        <th>Email</th>
+                        <th>Parts asked</th>
+                        <th>Status</th>
+                        <th>Sent</th>
+                        <th>Replied</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in rfqs %}
+                    <tr>
+                        <td><strong>{{ r.vendor_name or '-' }}</strong></td>
+                        <td style="font-size:12px; color:#555;">{{ r.vendor_email or '-' }}</td>
+                        <td style="font-size:12px;">{{ (r.requested_mpns or []) | join(', ') if r.requested_mpns else '-' }}</td>
+                        <td>
+                            {% if r.status == 'replied' %}
+                                <span class="badge badge-green">REPLIED</span>
+                            {% elif r.status == 'no_reply' %}
+                                <span class="badge badge-red">NO REPLY</span>
+                            {% else %}
+                                <span class="badge badge-amber">SENT</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-size:12px;">{{ r.sent_at.strftime('%d %b %H:%M') if r.sent_at else '-' }}</td>
+                        <td style="font-size:12px;">{{ r.replied_at.strftime('%d %b %H:%M') if r.replied_at else '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="color:#999; font-size:13px;">No vendor RFQs recorded for this enquiry.</p>
+            {% endif %}
+
+            <h3 style="font-size:14px; color:#666; margin:20px 0 6px;">Cost quotes received ({{ vquotes|length }})<span style="font-weight:400; color:#999;"> — ✓ = vendor chosen for that part</span></h3>
+            {% if vquotes %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Part (MPN)</th>
+                        <th>Vendor</th>
+                        <th>Cost / pc</th>
+                        <th>Date Code</th>
+                        <th>Lead Time</th>
+                        <th>MOQ / SPQ</th>
+                        <th>Offered Qty</th>
+                        <th>Chosen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for q in vquotes %}
+                    <tr {% if q.is_selected %}style="background:#e8f5e9;"{% endif %}>
+                        <td><strong>{{ q.mpn or '-' }}</strong></td>
+                        <td>{{ q.vendor_name or '-' }}</td>
+                        <td style="font-weight:600;">{% if q.cost_price is not none %}{{ q.currency or '' }} {{ '%.4f' % q.cost_price }}{% else %}-{% endif %}</td>
+                        <td>{{ q.date_code or '-' }}</td>
+                        <td>{{ q.lead_time or '-' }}</td>
+                        <td>{{ q.moq or '-' }}{% if q.spq %} / {{ q.spq }}{% endif %}</td>
+                        <td>{{ q.offered_qty if q.offered_qty is not none else 'full' }}</td>
+                        <td>{% if q.is_selected %}<span class="badge badge-green">✓ SELECTED</span>{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="color:#999; font-size:13px;">No vendor cost quotes received yet for this enquiry.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if quote.status.value == 'awaiting_pricing' %}
+        <div class="section" style="background: #fff8e1;">
+            <h2>Quotation Email Draft</h2>
+            <p style="color: #e65100; font-size: 14px; font-weight: 600;">
+                Waiting for pricing from Purchase Team / Quote Analyst. Once pricing is submitted above, the AI agent will auto-generate the quotation email here.
+            </p>
+        </div>
+        {% elif quote.status.value in ['awaiting_revised_pricing', 'negotiation_forwarded'] %}
+        <div class="section" style="background: #fff3e0; border: 2px solid #f57c00;">
+            <h2>Waiting for Revised Pricing (Negotiation Round {{ quote.negotiation_round }})</h2>
+            <p style="color: #e65100; font-size: 14px; font-weight: 600;">
+                Customer's target prices have been forwarded to the team on the same email thread. Waiting for the team to reply with revised pricing. The AI agent will auto-detect the reply and draft a revised quotation.
+            </p>
+        </div>
+        {% else %}
+        <div class="section">
+            <h2>Quotation Email Draft</h2>
+            <p style="color: #666; font-size: 13px; margin-bottom: 16px;">
+                Review the AI-drafted quotation email below. You can edit it before approving and sending to the customer.
+            </p>
+
+            <div class="tab-buttons">
+                <div class="tab-btn active" onclick="switchTab('preview')">Preview</div>
+                <div class="tab-btn" onclick="switchTab('edit')">Edit HTML</div>
+            </div>
+
+            <div id="tab-preview" class="tab-content active">
+                <div class="email-preview">
+                    {{ quote.approved_email_body or quote.draft_email_body | safe }}
+                </div>
+            </div>
+
+            <div id="tab-edit" class="tab-content">
+                <textarea id="email-body" class="email-editor">{{ quote.approved_email_body or quote.draft_email_body }}</textarea>
+            </div>
+
+            {% if quote.status.value in ['awaiting_approval', 'revised_awaiting_approval', 'draft'] %}
+            <div class="actions">
+                <button class="btn btn-success" onclick="approveQuote()">
+                    {% if quote.status.value == 'revised_awaiting_approval' %}Approve Revised Quotation{% else %}Approve Quotation{% endif %}
+                </button>
+                <button class="btn btn-primary" onclick="saveEdit()">Save Edits</button>
+                <button class="btn btn-danger" onclick="rejectQuote()">Reject / Redo</button>
+            </div>
+            {% elif quote.status.value == 'approved' %}
+            <div class="actions">
+                <button class="btn btn-success" onclick="sendQuote()">
+                    {% if quote.negotiation_round and quote.negotiation_round > 0 %}Send Revised Quote to Customer{% else %}Send to Customer{% endif %}
+                </button>
+                <button class="btn btn-outline" onclick="saveEdit()">Edit Before Sending</button>
+            </div>
+            {% elif quote.status.value in ['sent', 'revised_sent'] %}
+            <div class="actions">
+                <button class="btn btn-outline" disabled>
+                    {% if quote.status.value == 'revised_sent' %}Revised Quote Sent{% else %}Already Sent{% endif %}
+                </button>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if negotiations and negotiations|length > 0 %}
+        <div class="section">
+            <h2>Negotiation History ({{ negotiations|length }} round{{ 's' if negotiations|length > 1 else '' }})</h2>
+            {% for neg in negotiations %}
+            <div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; margin-bottom: 16px; {% if loop.last %}border-color: #f57c00;{% endif %}">
+                <h3 style="font-size: 15px; margin-bottom: 12px;">
+                    Round {{ neg.round_number }}
+                    {% if neg.revised_quote_sent_at %}
+                        <span class="badge badge-green">REVISED QUOTE SENT</span>
+                    {% elif neg.revised_pricing_at %}
+                        <span class="badge badge-amber">REVISED PRICING RECEIVED</span>
+                    {% elif neg.forwarded_at %}
+                        <span class="badge" style="background: #fff3e0; color: #e65100;">AWAITING TEAM RESPONSE</span>
+                    {% endif %}
+                </h3>
+
+                {% if neg.customer_target_prices and neg.customer_target_prices|length > 0 %}
+                <p style="font-size: 13px; font-weight: 600; color: #666; margin-bottom: 8px;">Customer Target Prices:</p>
+                <table style="margin-bottom: 12px;">
+                    <thead>
+                        <tr>
+                            <th>MPN</th>
+                            <th>Qty</th>
+                            <th>Our Price</th>
+                            <th>Customer Target</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in neg.customer_target_prices %}
+                        <tr>
+                            <td><strong>{{ item.mpn or '-' }}</strong></td>
+                            <td>{{ item.quantity or '-' }}</td>
+                            <td>{{ item.current_price or '-' }}</td>
+                            <td style="color: #d32f2f; font-weight: 600;">{{ item.target_price or '-' }}</td>
+                            <td>{{ item.notes or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+
+                {% if neg.team_revised_prices and neg.team_revised_prices|length > 0 %}
+                <p style="font-size: 13px; font-weight: 600; color: #666; margin-bottom: 8px;">Team Revised Prices:</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>MPN</th>
+                            <th>Revised Price</th>
+                            <th>Lead Time</th>
+                            <th>MOQ</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in neg.team_revised_prices %}
+                        <tr>
+                            <td><strong>{{ item.mpn or '-' }}</strong></td>
+                            <td style="color: #2e7d32; font-weight: 600;">{{ item.unit_price or '-' }}</td>
+                            <td>{{ item.lead_time or '-' }}</td>
+                            <td>{{ item.moq or '-' }}</td>
+                            <td>{{ item.notes or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+
+                <div style="font-size: 12px; color: #999; margin-top: 8px;">
+                    {% if neg.forwarded_at %}Forwarded: {{ neg.forwarded_at.strftime('%d %b %Y %H:%M') }}{% endif %}
+                    {% if neg.revised_pricing_at %} | Revised: {{ neg.revised_pricing_at.strftime('%d %b %Y %H:%M') }}{% endif %}
+                    {% if neg.revised_quote_sent_at %} | Sent: {{ neg.revised_quote_sent_at.strftime('%d %b %Y %H:%M') }}{% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if email %}
+        <div class="section">
+            <h2>Original Customer Email</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="label">From</div>
+                    <div class="value">{{ email.from_email }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Subject</div>
+                    <div class="value">{{ email.subject }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Received</div>
+                    <div class="value">{{ email.received_at.strftime('%d %b %Y %H:%M') if email.received_at else '-' }}</div>
+                </div>
+            </div>
+            <div class="email-preview">
+                {{ email.body_text | replace('\n', '<br>') | safe }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        async function submitPricing() {
+            const items = [];
+            document.querySelectorAll('.price-input').forEach(input => {
+                const mpn = input.getAttribute('data-mpn');
+                const row = input.closest('tr');
+                const unitPrice = parseFloat(input.value) || null;
+                const moq = parseInt(row.querySelector('.moq-input').value) || null;
+                const leadTime = row.querySelector('.lead-time-input').value || null;
+                const notes = row.querySelector('.notes-input').value || null;
+
+                items.push({
+                    mpn: mpn,
+                    unit_price: unitPrice,
+                    lead_time: leadTime,
+                    moq: moq,
+                    notes: notes
+                });
+            });
+
+            // Check at least one price was entered
+            const hasPrice = items.some(i => i.unit_price !== null);
+            if (!hasPrice) {
+                alert('Please enter unit price for at least one item.');
+                return;
+            }
+
+            const pricingNotes = document.getElementById('pricing-notes') ? document.getElementById('pricing-notes').value : '';
+            const submittedBy = document.getElementById('submitted-by') ? document.getElementById('submitted-by').value : 'purchase_team';
+
+            try {
+                const resp = await fetch('/api/quote/{{ quote.id }}/submit-pricing', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        items: items,
+                        pricing_notes: pricingNotes,
+                        submitted_by: submittedBy
+                    })
+                });
+                const data = await resp.json();
+                if (resp.ok) {
+                    showAlert('success', 'Pricing submitted! Quotation email is being drafted...');
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    showAlert('error', data.detail || 'Error submitting pricing');
+                }
+            } catch(e) {
+                showAlert('error', 'Network error: ' + e.message);
+            }
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tab).classList.add('active');
+        }
+
+        function showAlert(type, message) {
+            const alert = document.getElementById('alert');
+            alert.className = 'alert alert-' + type;
+            alert.textContent = message;
+            alert.style.display = 'block';
+            setTimeout(() => alert.style.display = 'none', 5000);
+        }
+
+        async function approveQuote() {
+            const body = document.getElementById('email-body').value;
+            try {
+                const resp = await fetch('/api/quote/{{ quote.id }}/approve', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({action: 'approve', approved_email_body: body})
+                });
+                const data = await resp.json();
+                if (resp.ok) {
+                    showAlert('success', 'Quotation approved! You can now send it to the customer.');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showAlert('error', data.detail || 'Error approving quotation');
+                }
+            } catch(e) {
+                showAlert('error', 'Network error: ' + e.message);
+            }
+        }
+
+        async function rejectQuote() {
+            try {
+                const resp = await fetch('/api/quote/{{ quote.id }}/approve', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({action: 'reject'})
+                });
+                if (resp.ok) {
+                    showAlert('success', 'Quotation sent back to draft.');
+                    setTimeout(() => location.reload(), 1500);
+                }
+            } catch(e) {
+                showAlert('error', 'Network error: ' + e.message);
+            }
+        }
+
+        async function saveEdit() {
+            const body = document.getElementById('email-body').value;
+            try {
+                const resp = await fetch('/api/quote/{{ quote.id }}/approve', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({action: 'edit', approved_email_body: body})
+                });
+                if (resp.ok) {
+                    showAlert('success', 'Edits saved.');
+                    setTimeout(() => location.reload(), 1000);
+                }
+            } catch(e) {
+                showAlert('error', 'Network error: ' + e.message);
+            }
+        }
+
+        async function sendQuote() {
+            if (!confirm('Send this quotation to ' + '{{ quote.customer_email }}' + '?')) return;
+            try {
+                const resp = await fetch('/api/quote/{{ quote.id }}/send', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                const data = await resp.json();
+                if (resp.ok) {
+                    showAlert('success', 'Quotation sent to customer!');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showAlert('error', data.detail || 'Error sending quotation');
+                }
+            } catch(e) {
+                showAlert('error', 'Network error: ' + e.message);
+            }
+        }
+    </script>
+</body>
+</html>

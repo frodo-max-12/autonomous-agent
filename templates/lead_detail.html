@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ lead.name or lead.email }} - SemiSales AI Agent</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 20px 40px; }
+        .header h1 { font-size: 24px; }
+        .nav { background: #16213e; padding: 0 40px; display: flex; gap: 0; }
+        .nav a { color: rgba(255,255,255,0.7); text-decoration: none; padding: 12px 20px; font-size: 14px; border-bottom: 2px solid transparent; }
+        .nav a:hover { color: white; border-bottom-color: #4fc3f7; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px 40px; }
+        .breadcrumb { font-size: 13px; color: #666; margin-bottom: 20px; }
+        .breadcrumb a { color: #1976d2; text-decoration: none; }
+        .section { background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .section h2 { font-size: 18px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0; }
+        .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .info-item .label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+        .info-item .value { font-size: 15px; font-weight: 600; margin-top: 4px; word-break: break-word; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .badge-new { background: #e3f2fd; color: #1565c0; }
+        .badge-contacted { background: #fff8e1; color: #f57f17; }
+        .badge-qualified { background: #e8f5e9; color: #2e7d32; }
+        .badge-customer { background: #e0f7fa; color: #00695c; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 10px 12px; font-size: 11px; color: #666; text-transform: uppercase; border-bottom: 2px solid #e0e0e0; }
+        td { padding: 12px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+        .btn { padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; text-decoration: none; display: inline-block; }
+        .btn-primary { background: #1976d2; color: white; }
+        .btn-danger { background: #d32f2f; color: white; }
+    </style>
+</head>
+<body>
+    <div class="header"><h1>SemiSales AI Agent</h1></div>
+    <div class="nav">
+        <a href="/">Dashboard</a>
+        <a href="/emails">All Emails</a>
+        <a href="/quotations">Quotations</a>
+        <a href="/orders">Orders</a>
+        <a href="/vendors">Vendors</a>
+        <a href="/leads">Leads</a>
+    </div>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="/">Dashboard</a> / <a href="/leads">Leads</a> / {{ lead.name or lead.email }}
+        </div>
+
+        <div class="section">
+            <h2>{{ lead.name or 'Unnamed Lead' }} <span class="badge badge-{{ lead.status or 'new' }}">{{ lead.status or 'new' }}</span></h2>
+            <div class="info-grid">
+                <div class="info-item"><div class="label">Company</div><div class="value">{{ lead.company or '-' }}</div></div>
+                <div class="info-item"><div class="label">Designation</div><div class="value">{{ lead.designation or '-' }}</div></div>
+                <div class="info-item"><div class="label">Email</div><div class="value">{{ lead.email }}</div></div>
+                <div class="info-item"><div class="label">Phone</div><div class="value">{{ lead.phone or '-' }}</div></div>
+                <div class="info-item"><div class="label">Alternate Phone</div><div class="value">{{ lead.alternate_phone or '-' }}</div></div>
+                <div class="info-item"><div class="label">Website</div><div class="value">{{ lead.website or '-' }}</div></div>
+                <div class="info-item"><div class="label">City</div><div class="value">{{ lead.city or '-' }}</div></div>
+                <div class="info-item"><div class="label">State</div><div class="value">{{ lead.state or '-' }}</div></div>
+                <div class="info-item"><div class="label">Country</div><div class="value">{{ lead.country or '-' }}</div></div>
+                <div class="info-item"><div class="label">Pincode</div><div class="value">{{ lead.pincode or '-' }}</div></div>
+                <div class="info-item"><div class="label">Industry</div><div class="value">{{ lead.industry or '-' }}</div></div>
+                <div class="info-item"><div class="label">Source</div><div class="value">{{ lead.source or '-' }}</div></div>
+            </div>
+
+            {% if lead.address %}
+            <div class="info-item" style="margin-top: 16px;">
+                <div class="label">Address</div>
+                <div class="value">{{ lead.address }}</div>
+            </div>
+            {% endif %}
+
+            {% if lead.application %}
+            <div class="info-item" style="margin-top: 16px;">
+                <div class="label">Application / What They Build</div>
+                <div class="value">{{ lead.application }}</div>
+            </div>
+            {% endif %}
+
+            {% if lead.notes %}
+            <div class="info-item" style="margin-top: 16px;">
+                <div class="label">Notes</div>
+                <div class="value">{{ lead.notes }}</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h2>Interaction Stats</h2>
+            <div class="info-grid">
+                <div class="info-item"><div class="label">Total Inquiries</div><div class="value">{{ lead.total_inquiries or 0 }}</div></div>
+                <div class="info-item"><div class="label">Total Quotes Sent</div><div class="value">{{ lead.total_quotes_sent or 0 }}</div></div>
+                <div class="info-item"><div class="label">Total Orders</div><div class="value">{{ lead.total_orders or 0 }}</div></div>
+                <div class="info-item"><div class="label">First Contact</div><div class="value">{{ lead.first_contact_at.strftime('%d %b %Y') if lead.first_contact_at else '-' }}</div></div>
+                <div class="info-item"><div class="label">Last Contact</div><div class="value">{{ lead.last_contact_at.strftime('%d %b %Y') if lead.last_contact_at else '-' }}</div></div>
+                <div class="info-item"><div class="label">Lead Created</div><div class="value">{{ lead.created_at.strftime('%d %b %Y') if lead.created_at else '-' }}</div></div>
+            </div>
+        </div>
+
+        {% if history %}
+        <div class="section">
+            <h2>Interaction History ({{ history | length }})</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Summary</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for h in history %}
+                    <tr>
+                        <td>{{ h.created_at.strftime('%d %b %Y %H:%M') if h.created_at else '-' }}</td>
+                        <td>{{ h.interaction_type | upper }}</td>
+                        <td>{{ h.summary }}</td>
+                        <td>
+                            {% if h.email_id %}
+                            <a href="/email/{{ h.email_id }}" class="btn btn-primary">View Email</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

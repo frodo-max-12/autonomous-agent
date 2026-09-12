@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sourcing {{ quote.quote_number }} - SemiSales AI Agent</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 20px 40px; }
+        .header h1 { font-size: 24px; }
+        .nav { background: #16213e; padding: 0 40px; display: flex; gap: 0; }
+        .nav a { color: rgba(255,255,255,0.7); text-decoration: none; padding: 12px 20px; font-size: 14px; border-bottom: 2px solid transparent; }
+        .nav a:hover, .nav a.active { color: white; border-bottom-color: #4fc3f7; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 30px 40px; }
+        .section { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 24px; }
+        h2 { font-size: 18px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 10px 12px; font-size: 12px; text-transform: uppercase; color: #666; border-bottom: 2px solid #e0e0e0; }
+        td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+        .meta { display: flex; gap: 30px; flex-wrap: wrap; font-size: 14px; }
+        .meta b { color: #666; font-weight: 600; display: block; font-size: 11px; text-transform: uppercase; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .s-priced { background: #e8f5e9; color: #2e7d32; }
+        .s-pending { background: #fff8e1; color: #f57f17; }
+        .s-needs_review { background: #fce4ec; color: #c62828; }
+        .s-no_bid { background: #fdecea; color: #c62828; }
+        .row-priced { background: #f4fbf5; } .row-pending { background: #fffdf3; } .row-needs_review { background: #fdf3f6; } .row-no_bid { background: #fdecea; }
+        .row-sel { background: #e8f5e9; }
+        .rt { text-align: right; } .muted { color: #999; }
+        .pill { display:inline-block; background:#eef2f7; border-radius:12px; padding:2px 8px; font-size:11px; }
+        .banner { padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; }
+        .banner-warn { background: #fff8e1; border-left: 4px solid #f57c00; }
+        .banner-ok { background: #e8f5e9; border-left: 4px solid #2e7d32; }
+        a.back { color:#1976d2; text-decoration:none; font-size:13px; }
+    </style>
+</head>
+<body>
+    <div class="header"><h1>Sourcing &mdash; {{ quote.quote_number }}</h1></div>
+    <div class="nav">
+        <a href="/">Dashboard</a>
+        <a href="/emails">All Emails</a>
+        <a href="/quotations">Quotations</a>
+        <a href="/orders">Orders</a>
+        <a href="/vendors">Vendors</a>
+        <a href="/leads">Leads</a>
+    </div>
+
+    <div class="container">
+        <a class="back" href="/quote/{{ quote.id }}">&larr; Back to quotation</a>
+
+        {% set ns = namespace(pending=0, priced=0) %}
+        {% for it in line_items %}{% if it.get('pricing_status') in ['pending','needs_review'] %}{% set ns.pending = ns.pending + 1 %}{% endif %}{% if it.get('unit_price') is not none %}{% set ns.priced = ns.priced + 1 %}{% endif %}{% endfor %}
+        {% if ns.pending > 0 %}
+        <div class="banner banner-warn" style="margin-top:16px;">
+            <strong>{{ ns.pending }} line(s) awaiting vendor / attention</strong> — {{ ns.priced }} line(s) are priced.
+            You can send the customer a <strong>partial quote now</strong> (priced items, the rest shown "Pending"),
+            and the agent keeps watching the silent vendors and sends an updated quote when they reply.
+            {% if ns.priced > 0 %}
+            <form method="post" action="/api/quotation/{{ quote.id }}/send-partial" style="display:inline;margin-left:8px;"
+                  onsubmit="return confirm('Send a partial quote to {{ quote.customer_email }} now — {{ ns.priced }} priced line(s), {{ ns.pending }} shown as Pending?');">
+                <button type="submit">Send partial quote now ({{ ns.priced }} priced)</button>
+            </form>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="banner banner-ok" style="margin-top:16px;">All lines are priced. This quote is eligible for confidence-gated auto-send.</div>
+        {% endif %}
+
+        {% if quote.currency_assumed %}
+        <div class="banner banner-warn" style="margin-top:12px;">
+            <strong>Currency assumed: {{ quote.currency }}</strong>
+            <span class="muted">— the customer didn't state one (inferred from {{ quote.currency_source or 'account default' }}).</span>
+            Please confirm before this quote goes out.
+            <form method="post" action="/api/quotation/{{ quote.id }}/currency" style="display:inline;margin-left:8px;">
+                <input type="hidden" name="currency" value="{{ quote.currency }}">
+                <button type="submit">Confirm {{ quote.currency }}</button>
+            </form>
+            <form method="post" action="/api/quotation/{{ quote.id }}/currency" style="display:inline;margin-left:4px;">
+                <input type="hidden" name="currency" value="{{ 'INR' if quote.currency == 'USD' else 'USD' }}">
+                <button type="submit">Switch to {{ 'INR' if quote.currency == 'USD' else 'USD' }} &amp; re-price</button>
+            </form>
+        </div>
+        {% endif %}
+
+        <div class="section">
+            <h2>Quote</h2>
+            <div class="meta">
+                <div><b>Customer</b>{{ quote.customer_name or '-' }}</div>
+                <div><b>Company</b>{{ quote.customer_company or '-' }}</div>
+                <div><b>Account</b>{{ quote.account | upper }}</div>
+                <div><b>Currency</b>{{ quote.currency }}</div>
+                <div><b>Status</b><span class="badge s-priced">{{ quote.status.value | replace('_',' ') }}</span></div>
+                <div><b>Est. total (resale)</b>{{ quote.currency }} {{ '%.2f'|format(quote.total_amount or 0) }}</div>
+                <div><b>Margin</b>
+                    <form method="post" action="/api/quotation/{{ quote.id }}/margin" style="display:inline;">
+                        <input type="number" name="margin_percent" step="0.1" min="0" max="100" style="width:64px;"
+                               value="{{ '%.1f'|format(quote.margin_percent_override) if quote.margin_percent_override is not none else '' }}"
+                               placeholder="default">%
+                        <button type="submit">Apply &amp; re-price</button>
+                        <span class="muted" style="font-size:11px;">{{ 'flat quote override' if quote.margin_percent_override is not none else 'using settings default/overrides' }}</span>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Consolidated pricing (internal — cost &amp; margin hidden from customer)</h2>
+            <table>
+                <thead><tr><th>MPN</th><th>Make</th><th class="rt">Qty</th><th>Selected vendor</th><th class="rt">Cost</th><th class="rt">Margin %</th><th class="rt">Resale</th><th>Status</th></tr></thead>
+                <tbody>
+                {% for it in line_items %}
+                    <tr class="row-{{ it.get('pricing_status') or 'pending' }}">
+                        <td><strong>{{ it.get('mpn') or '(to identify)' }}</strong></td>
+                        <td>{{ it.get('manufacturer') or '-' }}</td>
+                        <td class="rt">{{ it.get('quantity') or '-' }}</td>
+                        <td>{{ it.get('selected_vendor') or '<span class="muted">—</span>' | safe }}{% if it.get('vendor_pinned') %} <span class="badge" style="background:#e3f2fd;color:#0d47a1;" title="Manually pinned by a human">manual</span> <form method="post" action="/api/quotation/{{ quote.id }}/select-vendor" style="display:inline;"><input type="hidden" name="mpn" value="{{ it.get('mpn') }}"><input type="hidden" name="vendor_quote_id" value=""><button type="submit" style="font-size:10px;padding:1px 5px;cursor:pointer;" title="Return to automatic lowest-cost selection">auto</button></form>{% endif %}</td>
+                        <td class="rt">{% if it.get('cost_price') is not none %}{{ it.get('cost_currency') or quote.currency }} {{ '%.4f'|format(it.get('cost_price')) }}{% else %}-{% endif %}</td>
+                        <td class="rt">{{ ('%.0f'|format(it.get('margin_percent'))) + '%' if it.get('margin_percent') is not none else '-' }}</td>
+                        <td class="rt">{% if it.get('unit_price') is not none %}<strong>{{ quote.currency }} {{ '%.4f'|format(it.get('unit_price')) }}</strong>{% else %}-{% endif %}</td>
+                        <td><span class="badge s-{{ it.get('pricing_status') or 'pending' }}">{{ (it.get('pricing_status') or 'pending') | replace('_',' ') }}</span>{% if it.get('eud_required') %} <span class="badge" style="background:#f3e5f5;color:#8e24aa;" title="{{ it.get('eud_reason') }}">EUD</span>{% endif %}{% if it.get('pricing_note') %}<br><span class="muted" style="font-size:11px;">{{ it.get('pricing_note') }}</span>{% endif %}{% if it.get('quote_valid_until') %}<br><span class="muted" style="font-size:11px;">valid until {{ it.get('quote_valid_until')[:10] }}</span>{% endif %}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Vendor RFQs ({{ rfqs|length }})</h2>
+            {% if rfqs %}
+            <table>
+                <thead><tr><th>Vendor</th><th>Email</th><th class="rt">Parts asked</th><th>Status</th><th>Sent</th><th>Replied</th></tr></thead>
+                <tbody>
+                {% for r in rfqs %}
+                    <tr>
+                        <td><strong>{{ r.vendor_name }}</strong></td>
+                        <td style="font-size:12px;">{{ r.vendor_email }}</td>
+                        <td class="rt">{{ (r.requested_mpns or [])|length }}</td>
+                        <td><span class="badge {{ 's-priced' if r.status=='replied' else 's-pending' }}">{{ r.status }}</span></td>
+                        <td>{{ r.sent_at.strftime('%d %b %H:%M') if r.sent_at else '-' }}</td>
+                        <td>{{ r.replied_at.strftime('%d %b %H:%M') if r.replied_at else '<span class="muted">awaiting</span>' | safe }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}<div class="muted">No vendor RFQs (this quote wasn't sourced autonomously).</div>{% endif %}
+        </div>
+
+        <div class="section">
+            <h2>All vendor cost quotes ({{ vquotes|length }}) — lowest per part auto-selected; click <em>Select</em> to override</h2>
+            {% if vquotes %}
+            <table>
+                <thead><tr><th>MPN</th><th>Vendor</th><th>Offered brand</th><th class="rt">Cost</th><th class="rt">Offered qty</th><th>Packaging</th><th class="rt">MOQ</th><th class="rt">SPQ</th><th>Lead time</th><th>Valid until</th><th>Selected</th></tr></thead>
+                <tbody>
+                {% for vq in vquotes %}
+                    <tr class="{{ 'row-sel' if vq.is_selected else '' }}">
+                        <td>{{ vq.mpn or '-' }}</td>
+                        <td>{{ vq.vendor_name }}</td>
+                        <td>{{ vq.manufacturer or '<span class="muted">—</span>' | safe }}</td>
+                        <td class="rt"><strong>{{ vq.currency or quote.currency }} {{ '%.4f'|format(vq.cost_price) if vq.cost_price is not none else '-' }}</strong></td>
+                        <td class="rt">{{ '{:,}'.format(vq.offered_qty) if vq.offered_qty is not none else '<span class="muted">full</span>' | safe }}</td>
+                        <td>{{ vq.packaging or '<span class="muted">—</span>' | safe }}</td>
+                        <td class="rt">{{ vq.moq if vq.moq is not none else '-' }}</td>
+                        <td class="rt">{{ vq.spq if vq.spq is not none else '-' }}</td>
+                        <td>{{ vq.lead_time or '-' }}</td>
+                        <td>{{ vq.valid_until.strftime('%d %b') if vq.valid_until else '<span class="muted">—</span>' | safe }}</td>
+                        <td>{% if vq.is_selected %}<span class="badge s-priced">✓ selected</span>{% else %}<form method="post" action="/api/quotation/{{ quote.id }}/select-vendor" style="display:inline;"><input type="hidden" name="mpn" value="{{ vq.mpn }}"><input type="hidden" name="vendor_quote_id" value="{{ vq.id }}"><button type="submit" style="font-size:11px;padding:2px 8px;cursor:pointer;">Select</button></form>{% endif %}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}<div class="muted">No vendor cost quotes parsed yet.</div>{% endif %}
+        </div>
+    </div>
+</body>
+</html>

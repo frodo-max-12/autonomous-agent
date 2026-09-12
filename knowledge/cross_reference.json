@@ -1,0 +1,215 @@
+{
+  "_meta": {
+    "purpose": "Verified parametric data for our AUTHORISED brands, used to cross-reference a customer's part to ours.",
+    "hard_rule": "Nothing goes in here that was not read off the MANUFACTURER's own website. Never a distributor listing (they are our competitors and the data is second-hand), never an LLM guess.",
+    "why": "The agent previously invented MPNs by pattern-matching the customer's part number (Mornsun 'IB2405LS-1WR3' -> 'B2405LS-1WR3' at CLAF, which does not exist) and emailed them to a customer. Specs, not names, decide a cross.",
+    "updated": "2026-07-21"
+  },
+
+  "brands": {
+    "CLAF Power": {
+      "manufacturer_site": "https://www.clafpower.com/",
+      "verified_on": "2026-07-21",
+      "verified_by": "clafpower.com category tables",
+      "series": [
+        {
+          "series": "DES1-B",
+          "source_url": "https://www.clafpower.com/products/25/sip-package.html",
+          "family": "dc_dc_converter",
+          "power_w": 1.0,
+          "input_type": "wide",
+          "input_min_v": 4.5,
+          "input_max_v": 75.0,
+          "output_type": "single",
+          "output_v_range": [3.3, 24.0],
+          "isolation_vdc": 1500,
+          "package": "SIP",
+          "regulated": true
+        },
+        {
+          "series": "DES1-F",
+          "source_url": "https://www.clafpower.com/products/25/sip-package.html",
+          "family": "dc_dc_converter",
+          "power_w": 1.0,
+          "input_type": "wide",
+          "input_nominal_v": 24.0,
+          "input_min_v": 18.0,
+          "input_max_v": 36.0,
+          "output_type": "single",
+          "output_v_range": [3.3, 24.0],
+          "isolation_vdc": 3000,
+          "package": "SIP",
+          "regulated": true
+        },
+        {
+          "series": "DUS1-F",
+          "source_url": "https://www.clafpower.com/products/25/sip-package.html",
+          "family": "dc_dc_converter",
+          "power_w": 1.0,
+          "input_type": "wide",
+          "input_nominal_v": 12.0,
+          "input_min_v": 4.5,
+          "input_max_v": 36.0,
+          "output_type": "single",
+          "output_v_range": [5.0, 15.0],
+          "isolation_vdc": 3000,
+          "package": "SIP",
+          "regulated": true
+        },
+        {
+          "series": "DES3-B",
+          "source_url": "https://www.clafpower.com/products/25/sip-package.html",
+          "family": "dc_dc_converter",
+          "power_w": 3.0,
+          "input_type": "wide",
+          "input_min_v": 4.5,
+          "input_max_v": 75.0,
+          "output_type": "single",
+          "output_v_range": [3.3, 24.0],
+          "isolation_vdc": 1500,
+          "package": "SIP",
+          "regulated": true
+        },
+        {
+          "series": "DES3-F",
+          "source_url": "https://www.clafpower.com/products/25/sip-package.html",
+          "family": "dc_dc_converter",
+          "power_w": 3.0,
+          "input_type": "wide",
+          "input_min_v": 4.5,
+          "input_max_v": 75.0,
+          "output_type": "single",
+          "output_v_range": [3.3, 24.0],
+          "isolation_vdc": 3000,
+          "package": "SIP",
+          "regulated": true
+        },
+        {
+          "series": "DES3-A",
+          "source_url": "https://www.clafpower.com/products/25/sip-package.html",
+          "family": "dc_dc_converter",
+          "power_w": 3.0,
+          "input_type": "wide",
+          "input_min_v": 4.5,
+          "input_max_v": 75.0,
+          "output_type": "dual",
+          "output_v_range": [5.0, 24.0],
+          "isolation_vdc": 1500,
+          "package": "SIP",
+          "regulated": true
+        },
+        {
+          "series": "DES3-E",
+          "source_url": "https://www.clafpower.com/products/25/sip-package.html",
+          "family": "dc_dc_converter",
+          "power_w": 3.0,
+          "input_type": "wide",
+          "input_min_v": 4.5,
+          "input_max_v": 75.0,
+          "output_type": "dual",
+          "output_v_range": [5.0, 15.0],
+          "isolation_vdc": 3000,
+          "package": "SIP",
+          "regulated": true
+        },
+        {
+          "series": "DES6-B",
+          "source_url": "https://www.clafpower.com/products/25/sip-package.html",
+          "family": "dc_dc_converter",
+          "power_w": 6.0,
+          "input_type": "wide",
+          "input_min_v": 9.0,
+          "input_max_v": 36.0,
+          "output_type": "single",
+          "output_v_range": [3.3, 24.0],
+          "isolation_vdc": 1600,
+          "package": "SIP",
+          "regulated": true
+        },
+        {
+          "series": "DES10-B",
+          "source_url": "https://www.clafpower.com/products/25/sip-package.html",
+          "family": "dc_dc_converter",
+          "power_w": 10.0,
+          "input_type": "wide",
+          "input_min_v": 9.0,
+          "input_max_v": 36.0,
+          "output_type": "single",
+          "output_v_range": [3.3, 24.0],
+          "isolation_vdc": 1500,
+          "package": "SIP",
+          "regulated": true
+        },
+        {
+          "series": "DFLS1",
+          "source_url": "https://www.clafpower.com/products/23/unregulated-output-s%26dip.html",
+          "family": "dc_dc_converter",
+          "power_w": 1.0,
+          "input_type": "fixed",
+          "input_fixed_v": [3.3, 5.0, 12.0, 15.0, 24.0],
+          "output_type": "single",
+          "output_v_range": [3.3, 24.0],
+          "isolation_vdc": 1500,
+          "package": "SIP",
+          "regulated": false,
+          "dimensions_mm": "19.65x6.00x10.16"
+        },
+        {
+          "series": "DFN1-F",
+          "source_url": "https://www.clafpower.com/products/23/unregulated-output-s%26dip.html",
+          "family": "dc_dc_converter",
+          "power_w": 1.0,
+          "input_type": "fixed",
+          "input_fixed_v": [3.3, 5.0, 12.0, 24.0],
+          "output_type": "single",
+          "output_v_range": [3.3, 24.0],
+          "isolation_vdc": 3000,
+          "package": "DIP",
+          "regulated": false,
+          "dimensions_mm": "12.70x10.16x8.20"
+        },
+        {
+          "series": "DFS1-E",
+          "source_url": "https://www.clafpower.com/products/23/unregulated-output-s%26dip.html",
+          "family": "dc_dc_converter",
+          "power_w": 1.0,
+          "input_type": "fixed",
+          "input_fixed_v": [3.3, 5.0, 12.0, 24.0],
+          "output_type": "dual",
+          "output_v_range": [3.3, 24.0],
+          "isolation_vdc": 3000,
+          "package": "SIP",
+          "regulated": false
+        },
+        {
+          "series": "DFS1-G",
+          "source_url": "https://www.clafpower.com/products/23/unregulated-output-s%26dip.html",
+          "family": "dc_dc_converter",
+          "power_w": 1.0,
+          "input_type": "fixed",
+          "input_fixed_v": [3.3, 5.0, 12.0, 24.0],
+          "output_type": "dual",
+          "output_v_range": [3.3, 24.0],
+          "isolation_vdc": 6000,
+          "package": "SIP",
+          "regulated": false,
+          "dimensions_mm": "19.50x9.80x12.50"
+        }
+      ]
+    }
+  },
+
+  "confirmed_crosses": [
+    {
+      "_comment": "Human-confirmed pairs. ONLY these are ever emailed to a customer as a specific MPN. Added via the dashboard when a person approves a proposed cross, or by hand here.",
+      "_example": true,
+      "requested_mpn": "EXAMPLE-DELETE-ME",
+      "requested_manufacturer": "Example",
+      "our_brand": "CLAF Power",
+      "our_mpn": "EXAMPLE-0000",
+      "confirmed_by": "nobody",
+      "confirmed_on": "1970-01-01",
+      "notes": "Placeholder row so the file shape is obvious. Ignored at load time."
+    }
+  ]
+}

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendors - SemiSales AI Agent</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 20px 40px; }
+        .header h1 { font-size: 24px; }
+        .nav { background: #16213e; padding: 0 40px; display: flex; gap: 0; }
+        .nav a { color: rgba(255,255,255,0.7); text-decoration: none; padding: 12px 20px; font-size: 14px; border-bottom: 2px solid transparent; }
+        .nav a:hover, .nav a.active { color: white; border-bottom-color: #4fc3f7; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 30px 40px; }
+        .section { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 24px; }
+        h2 { font-size: 18px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 10px 12px; font-size: 12px; text-transform: uppercase; color: #666; border-bottom: 2px solid #e0e0e0; }
+        td { padding: 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+        tr:hover { background: #f8f9fa; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .badge-on { background: #e8f5e9; color: #2e7d32; }
+        .badge-off { background: #fce4ec; color: #c62828; }
+        .chip { display: inline-block; background: #eef2f7; color: #334; border-radius: 12px; padding: 2px 8px; font-size: 11px; margin: 1px; }
+        .btn { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; color: white; }
+        .btn-edit { background: #1976d2; } .btn-toggle { background: #f57c00; } .btn-del { background: #c62828; }
+        .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .form-grid label { font-size: 12px; color: #666; display: block; margin-bottom: 4px; }
+        .form-grid input, .form-grid select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; }
+        .full { grid-column: 1 / -1; }
+        .save { background: #2e7d32; color: white; padding: 10px 22px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        .muted { color: #999; } .empty { text-align: center; padding: 40px; color: #999; }
+        .hint { font-size: 12px; color: #888; margin-top: 6px; }
+    </style>
+</head>
+<body>
+    <div class="header"><h1>SemiSales AI Agent</h1></div>
+    <div class="nav">
+        <a href="/">Dashboard</a>
+        <a href="/emails">All Emails</a>
+        <a href="/quotations">Quotations</a>
+        <a href="/orders">Orders</a>
+        <a href="/vendors">Vendors</a>
+        <a href="/leads">Leads</a>
+    </div>
+
+    <div class="container">
+        <div class="section">
+            <h2 id="form-title">Add Vendor</h2>
+            <div class="form-grid">
+                <input type="hidden" id="v-id">
+                <div><label>Vendor name *</label><input id="v-name" placeholder="ST Micro India Distributor"></div>
+                <div><label>Email(s) *</label><input id="v-email" placeholder="rfq@vendor.com, sales@vendor.com"></div>
+                <div><label>Currency</label><select id="v-currency"><option>USD</option><option>INR</option></select></div>
+                <div><label>Priority (1=preferred)</label><input id="v-priority" type="number" value="3" min="1" max="5"></div>
+                <div class="full"><label>Brands (comma-separated; use <strong>ANY</strong> for an open-market broker)</label><input id="v-brands" placeholder="STMicroelectronics, ST   —or—   ANY"></div>
+                <div class="full"><label>Categories (optional)</label><input id="v-categories" placeholder="MCU, Power, Passives"></div>
+                <div><label>Country</label><input id="v-country" placeholder="India"></div>
+                <div><label>Active</label><select id="v-active"><option value="true">Yes</option><option value="false">No</option></select></div>
+                <div class="full"><label>Notes</label><input id="v-notes" placeholder="specialty, reliability..."></div>
+            </div>
+            <div style="margin-top:16px;">
+                <button class="save" onclick="saveVendor()">Save Vendor</button>
+                <button class="btn" style="background:#777;" onclick="resetForm()">Clear</button>
+                <div class="hint">Tip: bulk-load your list from Excel instead with <code>python scripts/import_vendors.py</code>.</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 style="display:flex;justify-content:space-between;align-items:center;">
+                <span>Vendors ({{ vendors|length }})</span>
+                <button class="btn btn-verify" style="background:#2e7d32;" onclick="rescore()">Recompute scores</button>
+            </h2>
+            <div class="hint">Priority = your manual rank if set, else the learned score's rank. <strong>Score</strong> (0-100) blends win-rate, reply-rate, response speed and lead time from real RFQs.</div>
+            {% if vendors %}
+            <table>
+                <thead><tr><th>Name</th><th>Email</th><th>Brands</th><th>Prio</th><th>Score</th><th>Performance</th><th>Active</th><th></th></tr></thead>
+                <tbody>
+                {% for v in vendors %}
+                    <tr>
+                        <td><strong>{{ v.name }}</strong>{% if v.country %}<br><span class="muted" style="font-size:11px;">{{ v.country }}</span>{% endif %}</td>
+                        <td style="font-size:12px;">{{ v.email or '—' }}</td>
+                        <td>{% for b in (v.brands or [])[:6] %}<span class="chip">{{ b }}</span>{% endfor %}{% if (v.brands or [])|length > 6 %}<span class="muted">+{{ (v.brands|length) - 6 }}</span>{% endif %}</td>
+                        <td>{{ v.priority if v.priority is not none else ('~' ~ v.dynamic_priority if v.dynamic_priority is not none else '-') }}</td>
+                        <td>{% if v.score is not none %}<strong>{{ '%.0f'|format(v.score) }}</strong>{% else %}<span class="muted">-</span>{% endif %}</td>
+                        <td style="font-size:12px;">
+                            {% if v.rfqs_sent or v.quotes_received %}
+                            win {{ v.quotes_won or 0 }}/{{ v.quotes_received or 0 }} · reply {{ v.rfqs_replied or 0 }}/{{ v.rfqs_sent or 0 }}{% if v.avg_response_hours is not none %} · {{ '%.0f'|format(v.avg_response_hours) }}h{% endif %}{% if v.avg_lead_days is not none %} · {{ '%.0f'|format(v.avg_lead_days) }}d lead{% endif %}
+                            {% else %}<span class="muted">no history yet</span>{% endif %}
+                        </td>
+                        <td><span class="badge {{ 'badge-on' if v.active else 'badge-off' }}">{{ 'Active' if v.active else 'Off' }}</span></td>
+                        <td style="white-space:nowrap;">
+                            <button class="btn btn-edit" onclick='editVendor({{ {"id":v.id,"name":v.name,"email":v.email,"brands":(v.brands or [])|join(", "),"categories":(v.categories or [])|join(", "),"currency":v.currency,"country":v.country or "","priority":v.priority,"active":v.active,"notes":v.notes or ""} | tojson }})'>Edit</button>
+                            <button class="btn btn-toggle" onclick="toggleVendor({{ v.id }})">{{ 'Deactivate' if v.active else 'Activate' }}</button>
+                            <button class="btn btn-del" onclick="delVendor({{ v.id }}, '{{ v.name }}')">Delete</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty">No vendors yet. Add one above, or run <code>python scripts/import_vendors.py</code>.</div>
+            {% endif %}
+        </div>
+    </div>
+
+<script>
+function payload() {
+    return {
+        name: document.getElementById('v-name').value.trim(),
+        email: document.getElementById('v-email').value.trim(),
+        brands: document.getElementById('v-brands').value,
+        categories: document.getElementById('v-categories').value,
+        currency: document.getElementById('v-currency').value,
+        country: document.getElementById('v-country').value,
+        priority: parseInt(document.getElementById('v-priority').value || '3'),
+        active: document.getElementById('v-active').value === 'true',
+        notes: document.getElementById('v-notes').value
+    };
+}
+async function saveVendor() {
+    const p = payload();
+    if (!p.name || !p.email) { alert('Name and email are required.'); return; }
+    const id = document.getElementById('v-id').value;
+    const url = id ? `/api/vendor/${id}/update` : '/api/vendor';
+    const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(p)});
+    if (r.ok) location.reload(); else alert('Save failed: ' + (await r.text()));
+}
+function editVendor(v) {
+    document.getElementById('v-id').value = v.id;
+    document.getElementById('v-name').value = v.name;
+    document.getElementById('v-email').value = v.email;
+    document.getElementById('v-brands').value = v.brands;
+    document.getElementById('v-categories').value = v.categories;
+    document.getElementById('v-currency').value = v.currency;
+    document.getElementById('v-country').value = v.country;
+    document.getElementById('v-priority').value = v.priority;
+    document.getElementById('v-active').value = v.active ? 'true' : 'false';
+    document.getElementById('v-notes').value = v.notes;
+    document.getElementById('form-title').textContent = 'Edit Vendor #' + v.id;
+    window.scrollTo(0,0);
+}
+function resetForm() {
+    ['v-id','v-name','v-email','v-brands','v-categories','v-country','v-notes'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('v-priority').value = 3;
+    document.getElementById('v-active').value = 'true';
+    document.getElementById('form-title').textContent = 'Add Vendor';
+}
+async function rescore() {
+    const r = await fetch('/api/vendors/rescore', {method:'POST'});
+    if (r.ok) { const j = await r.json(); alert('Scored ' + j.scored + ' vendor(s) from RFQ history.'); location.reload(); }
+    else alert('Failed');
+}
+async function toggleVendor(id) {
+    const r = await fetch(`/api/vendor/${id}/toggle`, {method:'POST'});
+    if (r.ok) location.reload(); else alert('Failed');
+}
+async function delVendor(id, name) {
+    if (!confirm('Delete vendor "' + name + '"?')) return;
+    const r = await fetch(`/api/vendor/${id}`, {method:'DELETE'});
+    if (r.ok) location.reload(); else alert('Failed');
+}
+</script>
+</body>
+</html>

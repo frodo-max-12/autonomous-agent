@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leads - SemiSales AI Agent</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 20px 40px; }
+        .header h1 { font-size: 24px; }
+        .nav { background: #16213e; padding: 0 40px; display: flex; gap: 0; }
+        .nav a { color: rgba(255,255,255,0.7); text-decoration: none; padding: 12px 20px; font-size: 14px; border-bottom: 2px solid transparent; }
+        .nav a:hover, .nav a.active { color: white; border-bottom-color: #4fc3f7; }
+        .container { max-width: 1500px; margin: 0 auto; padding: 30px 40px; }
+        .stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: white; border-radius: 10px; padding: 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+        .stat-card .label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-card .value { font-size: 28px; font-weight: 700; margin-top: 6px; color: #1a1a2e; }
+        .actions-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn { padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; text-decoration: none; display: inline-block; }
+        .btn-primary { background: #1976d2; color: white; }
+        .btn-success { background: #2e7d32; color: white; }
+        .btn-warning { background: #f57c00; color: white; }
+        .btn-outline { background: white; border: 1px solid #ccc; color: #333; }
+        .section { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+        .filter-btn { padding: 6px 14px; border-radius: 20px; font-size: 12px; text-decoration: none; border: 1px solid #ddd; color: #666; background: white; }
+        .filter-btn.active { background: #1976d2; color: white; border-color: #1976d2; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 10px 12px; font-size: 11px; text-transform: uppercase; color: #666; border-bottom: 2px solid #e0e0e0; }
+        td { padding: 12px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+        tr:hover { background: #f8f9fa; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .badge-new { background: #e3f2fd; color: #1565c0; }
+        .badge-contacted { background: #fff8e1; color: #f57f17; }
+        .badge-qualified { background: #e8f5e9; color: #2e7d32; }
+        .badge-customer { background: #e0f7fa; color: #00695c; }
+        .badge-inactive { background: #f5f5f5; color: #999; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: white; border-radius: 12px; padding: 30px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; }
+        .modal-content h2 { margin-bottom: 20px; }
+        .form-row { margin-bottom: 12px; }
+        .form-row label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; text-transform: uppercase; }
+        .form-row input, .form-row textarea, .form-row select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; font-family: inherit; }
+        .form-row textarea { resize: vertical; min-height: 60px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .modal-actions { display: flex; gap: 12px; margin-top: 20px; justify-content: flex-end; }
+        .alert { padding: 12px 18px; border-radius: 8px; margin-bottom: 16px; display: none; }
+        .alert.success { background: #e8f5e9; color: #2e7d32; }
+        .alert.error { background: #fce4ec; color: #c62828; }
+    </style>
+</head>
+<body>
+    <div class="header"><h1>SemiSales AI Agent</h1></div>
+    <div class="nav">
+        <a href="/">Dashboard</a>
+        <a href="/emails">All Emails</a>
+        <a href="/quotations">Quotations</a>
+        <a href="/orders">Orders</a>
+        <a href="/vendors">Vendors</a>
+        <a href="/leads">Leads</a>
+    </div>
+
+    <div class="container">
+        <div id="alert" class="alert"></div>
+
+        <div class="stats">
+            <div class="stat-card"><div class="label">Total Leads</div><div class="value">{{ counts.total }}</div></div>
+            <div class="stat-card"><div class="label">New</div><div class="value">{{ counts.new }}</div></div>
+            <div class="stat-card"><div class="label">Contacted</div><div class="value">{{ counts.contacted }}</div></div>
+            <div class="stat-card"><div class="label">Qualified</div><div class="value">{{ counts.qualified }}</div></div>
+            <div class="stat-card"><div class="label">Customers</div><div class="value">{{ counts.customers }}</div></div>
+            <div class="stat-card"><div class="label">India</div><div class="value">{{ counts.india }}</div></div>
+        </div>
+
+        <div class="actions-bar">
+            <button class="btn btn-primary" onclick="openAddLeadModal()">+ Add Lead</button>
+            <button class="btn btn-success" onclick="openImportModal()">Import CSV/Excel</button>
+            <a href="/api/leads/export" class="btn btn-warning">Export to Excel</a>
+        </div>
+
+        <div class="section">
+            <div class="filters">
+                <a href="/leads" class="filter-btn {% if not filter_status %}active{% endif %}">All</a>
+                <a href="/leads?status=new" class="filter-btn {% if filter_status == 'new' %}active{% endif %}">New</a>
+                <a href="/leads?status=contacted" class="filter-btn {% if filter_status == 'contacted' %}active{% endif %}">Contacted</a>
+                <a href="/leads?status=qualified" class="filter-btn {% if filter_status == 'qualified' %}active{% endif %}">Qualified</a>
+                <a href="/leads?status=customer" class="filter-btn {% if filter_status == 'customer' %}active{% endif %}">Customers</a>
+                <a href="/leads?country=India" class="filter-btn {% if filter_country == 'India' %}active{% endif %}">India Only</a>
+            </div>
+
+            {% if leads %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Company</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>City</th>
+                        <th>Country</th>
+                        <th>Industry</th>
+                        <th>Status</th>
+                        <th>Inquiries</th>
+                        <th>Source</th>
+                        <th>Last Contact</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lead in leads %}
+                    <tr>
+                        <td><strong>{{ lead.name or '-' }}</strong></td>
+                        <td>{{ lead.company or '-' }}</td>
+                        <td>{{ lead.email }}</td>
+                        <td>{{ lead.phone or '-' }}</td>
+                        <td>{{ lead.city or '-' }}</td>
+                        <td>{{ lead.country or '-' }}</td>
+                        <td>{{ lead.industry or '-' }}</td>
+                        <td><span class="badge badge-{{ lead.status or 'new' }}">{{ lead.status or 'new' }}</span></td>
+                        <td>{{ lead.total_inquiries or 0 }}</td>
+                        <td>{{ lead.source or '-' }}</td>
+                        <td>{{ lead.last_contact_at.strftime('%d %b %y') if lead.last_contact_at else '-' }}</td>
+                        <td><a href="/lead/{{ lead.id }}" class="btn btn-outline" style="padding: 4px 10px;">View</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div style="text-align: center; padding: 40px; color: #999;">
+                No leads yet. Add one manually or wait for customer emails to be auto-extracted.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Add Lead Modal -->
+    <div id="addLeadModal" class="modal">
+        <div class="modal-content">
+            <h2>Add New Lead</h2>
+            <div class="form-grid">
+                <div class="form-row"><label>Name</label><input type="text" id="ld-name"></div>
+                <div class="form-row"><label>Company *</label><input type="text" id="ld-company"></div>
+                <div class="form-row"><label>Email *</label><input type="email" id="ld-email" required></div>
+                <div class="form-row"><label>Phone</label><input type="text" id="ld-phone"></div>
+                <div class="form-row"><label>Designation</label><input type="text" id="ld-designation"></div>
+                <div class="form-row"><label>Website</label><input type="text" id="ld-website"></div>
+                <div class="form-row"><label>City</label><input type="text" id="ld-city"></div>
+                <div class="form-row"><label>State</label><input type="text" id="ld-state"></div>
+                <div class="form-row"><label>Country</label><input type="text" id="ld-country" value="India"></div>
+                <div class="form-row"><label>Pincode</label><input type="text" id="ld-pincode"></div>
+                <div class="form-row"><label>Industry</label><input type="text" id="ld-industry" placeholder="Automotive, IoT, Medical..."></div>
+                <div class="form-row"><label>Application</label><input type="text" id="ld-application" placeholder="What they build"></div>
+            </div>
+            <div class="form-row"><label>Address</label><textarea id="ld-address"></textarea></div>
+            <div class="form-row"><label>Notes</label><textarea id="ld-notes"></textarea></div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('addLeadModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="submitLead()">Save Lead</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div id="importModal" class="modal">
+        <div class="modal-content">
+            <h2>Import Leads from CSV or Excel</h2>
+            <p style="color: #666; font-size: 13px; margin-bottom: 16px;">
+                Expected columns: <strong>name, company, email, phone, address, city, state, country, application, industry, website, notes</strong>
+                (email is required, others are optional)
+            </p>
+            <div class="form-row">
+                <input type="file" id="importFile" accept=".csv,.xlsx,.xls">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('importModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="submitImport()">Import</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openAddLeadModal() { document.getElementById('addLeadModal').classList.add('active'); }
+        function openImportModal() { document.getElementById('importModal').classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        function showAlert(type, msg) {
+            const a = document.getElementById('alert');
+            a.className = 'alert ' + type;
+            a.textContent = msg;
+            a.style.display = 'block';
+            setTimeout(() => a.style.display = 'none', 4000);
+        }
+
+        async function submitLead() {
+            const data = {
+                name: document.getElementById('ld-name').value,
+                company: document.getElementById('ld-company').value,
+                email: document.getElementById('ld-email').value,
+                phone: document.getElementById('ld-phone').value,
+                designation: document.getElementById('ld-designation').value,
+                website: document.getElementById('ld-website').value,
+                city: document.getElementById('ld-city').value,
+                state: document.getElementById('ld-state').value,
+                country: document.getElementById('ld-country').value,
+                pincode: document.getElementById('ld-pincode').value,
+                industry: document.getElementById('ld-industry').value,
+                application: document.getElementById('ld-application').value,
+                address: document.getElementById('ld-address').value,
+                notes: document.getElementById('ld-notes').value,
+            };
+
+            if (!data.email) {
+                showAlert('error', 'Email is required');
+                return;
+            }
+
+            try {
+                const resp = await fetch('/api/lead', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                if (resp.ok) {
+                    showAlert('success', 'Lead added successfully');
+                    closeModal('addLeadModal');
+                    setTimeout(() => location.reload(), 800);
+                } else {
+                    const err = await resp.json();
+                    showAlert('error', err.detail || 'Error adding lead');
+                }
+            } catch(e) {
+                showAlert('error', e.message);
+            }
+        }
+
+        async function submitImport() {
+            const file = document.getElementById('importFile').files[0];
+            if (!file) {
+                showAlert('error', 'Please select a file');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const resp = await fetch('/api/leads/import', {method: 'POST', body: formData});
+                const data = await resp.json();
+                if (resp.ok) {
+                    showAlert('success', `Imported ${data.imported} new, updated ${data.updated}, skipped ${data.skipped}`);
+                    closeModal('importModal');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showAlert('error', data.detail || 'Import failed');
+                }
+            } catch(e) {
+                showAlert('error', e.message);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+[Unit]
+# Autonomous Sales Agent — always-on systemd service (Linux VPS)
+# Replaces the Windows NSSM/laptop setup. No session-0 problem on Linux.
+Description=Autonomous Sales Agent (RFQ -> vendor sourcing -> quote)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=agent
+WorkingDirectory=/home/agent/ai-agent
+
+# Secrets (the Claude Max OAuth token) live in this 0600 file, NOT in the unit.
+EnvironmentFile=/home/agent/ai-agent/deploy/ai-agent.env
+
+# HOME must be set so `claude` finds ~/.claude ; PATH must contain `claude` AND `node`.
+# Verify the real dirs on your box with:  which claude node   -> and edit PATH below to match.
+Environment=HOME=/home/agent
+Environment=PATH=/home/agent/.local/bin:/usr/local/bin:/usr/bin:/bin
+
+# The agent is a long-running python loop that itself shells out to `claude -p`.
+ExecStart=/home/agent/ai-agent/.venv/bin/python main.py
+
+Restart=always
+RestartSec=15
+StandardOutput=append:/home/agent/ai-agent/logs/service_out.log
+StandardError=append:/home/agent/ai-agent/logs/service_err.log
+
+[Install]
+WantedBy=multi-user.target

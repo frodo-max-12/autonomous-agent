@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders - SemiSales AI Agent</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 20px 40px; }
+        .header h1 { font-size: 24px; }
+        .nav { background: #16213e; padding: 0 40px; display: flex; }
+        .nav a { color: rgba(255,255,255,0.7); text-decoration: none; padding: 12px 20px; font-size: 14px; border-bottom: 2px solid transparent; }
+        .nav a:hover, .nav a.active { color: white; border-bottom-color: #4fc3f7; }
+        .container { max-width: 1300px; margin: 0 auto; padding: 30px 40px; }
+        .order { background: white; border-radius: 12px; padding: 20px 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .order h3 { font-size: 16px; margin-bottom: 6px; }
+        .meta { display:flex; gap: 24px; flex-wrap: wrap; font-size: 13px; color:#555; margin-bottom: 14px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 8px 10px; font-size: 11px; text-transform: uppercase; color: #666; border-bottom: 2px solid #e0e0e0; }
+        td { padding: 8px 10px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+        .badge { display:inline-block; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:600; }
+        .b-placed { background:#e3f2fd; color:#1565c0; } .b-confirmed { background:#ede7f6; color:#5e35b1; }
+        .b-shipped { background:#fff3e0; color:#e65100; } .b-received { background:#e8f5e9; color:#2e7d32; }
+        .b-cancelled { background:#fce4ec; color:#c62828; } .b-test_sent, .b-suppressed_testing { background:#f5f5f5; color:#666; }
+        .b-no_contact, .b-send_failed { background:#fce4ec; color:#c62828; }
+        select { padding:4px; border:1px solid #ccc; border-radius:5px; font-size:12px; }
+        .muted { color:#999; } .empty { text-align:center; padding:40px; color:#999; background:white; border-radius:12px; }
+        .rt { text-align:right; }
+    </style>
+</head>
+<body>
+    <div class="header"><h1>Orders — customer PO &rarr; vendor POs</h1></div>
+    <div class="nav">
+        <a href="/">Dashboard</a>
+        <a href="/emails">All Emails</a>
+        <a href="/quotations">Quotations</a>
+        <a href="/orders">Orders</a>
+        <a href="/vendors">Vendors</a>
+        <a href="/leads">Leads</a>
+    </div>
+
+    <div class="container">
+        {% if orders %}
+        {% for o in orders %}
+        <div class="order">
+            <h3>{{ o.quote.quote_number }} — {{ o.quote.customer_name or '-' }}{% if o.quote.customer_company %} ({{ o.quote.customer_company }}){% endif %}</h3>
+            <div class="meta">
+                <div>Account: <strong>{{ o.quote.account|upper }}</strong></div>
+                <div>Currency: {{ o.quote.currency }}</div>
+                <div>Quote status: <span class="badge b-confirmed">{{ o.quote.status.value|replace('_',' ') }}</span></div>
+                <div>Sell total: {{ o.quote.currency }} {{ '%.2f'|format(o.quote.total_amount or 0) }}</div>
+                <div><a href="/sourcing/{{ o.quote.id }}">sourcing ↗</a></div>
+            </div>
+            {% if o.pos %}
+            <table>
+                <thead><tr><th>Vendor PO</th><th>Vendor</th><th class="rt">Lines</th><th class="rt">Cost total</th><th>Status</th><th>Update</th></tr></thead>
+                <tbody>
+                {% for po in o.pos %}
+                    <tr>
+                        <td><strong>{{ po.po_number }}</strong></td>
+                        <td>{{ po.vendor_name }}{% if po.vendor_email %}<br><span class="muted" style="font-size:11px;">{{ po.vendor_email }}</span>{% endif %}</td>
+                        <td class="rt">{{ (po.line_items or [])|length }}</td>
+                        <td class="rt">{{ po.currency }} {{ '%.2f'|format(po.total_cost or 0) }}</td>
+                        <td><span class="badge b-{{ po.status }}">{{ po.status|replace('_',' ') }}</span></td>
+                        <td>
+                            {% if po.status in ['placed','confirmed','shipped','received','cancelled'] %}
+                            <select onchange="setStatus({{ po.id }}, this.value)">
+                                {% for st in ['placed','confirmed','shipped','received','cancelled'] %}
+                                <option value="{{ st }}" {{ 'selected' if po.status==st else '' }}>{{ st }}</option>
+                                {% endfor %}
+                            </select>
+                            {% else %}<span class="muted">{{ po.status|replace('_',' ') }}</span>{% endif %}
+                        </td>
+                    </tr>
+                    {% if po.line_items %}
+                    <tr>
+                        <td colspan="6" style="background:#fafafa;padding:6px 12px 8px;border-top:none;">
+                            <span class="muted" style="font-size:11px;">Parts &amp; vendor cost from {{ po.vendor_name }}:</span><br>
+                            {% for ln in po.line_items %}
+                            <span style="display:inline-block;margin:3px 12px 3px 0;font-size:12px;">
+                                <strong>{{ ln.get('mpn') or '-' }}</strong>
+                                &times; {{ ln.get('quantity') if ln.get('quantity') not in (None, 0) else '?' }}
+                                @ <strong>{{ ln.get('currency') or po.currency }} {{ ln.get('unit_cost') }}</strong>
+                            </span>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="muted">No vendor POs placed yet for this order.</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty">No orders yet. When a customer sends a PO for a quoted deal, it appears here with the vendor POs placed against it.</div>
+        {% endif %}
+    </div>
+
+<script>
+async function setStatus(id, status) {
+    const r = await fetch(`/api/vendorpo/${id}/status`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status})});
+    if (r.ok) location.reload(); else alert('Failed: ' + (await r.text()));
+}
+</script>
+</body>
+</html>

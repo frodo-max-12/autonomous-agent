@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email #{{ email.id }} - SemiSales AI Agent</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 20px 40px; }
+        .header h1 { font-size: 24px; }
+        .nav { background: #16213e; padding: 0 40px; display: flex; gap: 0; }
+        .nav a { color: rgba(255,255,255,0.7); text-decoration: none; padding: 12px 20px; font-size: 14px; border-bottom: 2px solid transparent; }
+        .nav a:hover { color: white; border-bottom-color: #4fc3f7; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px 40px; }
+        .breadcrumb { font-size: 13px; color: #666; margin-bottom: 20px; }
+        .breadcrumb a { color: #1976d2; text-decoration: none; }
+        .section { background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .section h2 { font-size: 18px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0; }
+        .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+        .info-item .label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+        .info-item .value { font-size: 15px; font-weight: 600; margin-top: 4px; }
+        .email-body { background: #fafafa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; white-space: pre-wrap; font-size: 14px; line-height: 1.6; max-height: 500px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 10px 12px; font-size: 12px; text-transform: uppercase; color: #666; border-bottom: 2px solid #e0e0e0; }
+        td { padding: 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+        .badge-green { background: #e8f5e9; color: #2e7d32; }
+        .badge-amber { background: #fff8e1; color: #f57f17; }
+        .badge-red { background: #fce4ec; color: #c62828; }
+        .btn { padding: 8px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none; background: #1976d2; color: white; }
+    </style>
+</head>
+<body>
+    <div class="header"><h1>SemiSales AI Agent</h1></div>
+    <div class="nav">
+        <a href="/">Dashboard</a>
+        <a href="/emails">All Emails</a>
+        <a href="/quotations">Quotations</a>
+        <a href="/orders">Orders</a>
+        <a href="/vendors">Vendors</a>
+        <a href="/leads">Leads</a>
+    </div>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="/">Dashboard</a> / <a href="/emails">Emails</a> / #{{ email.id }}
+        </div>
+
+        <div class="section">
+            <h2>{{ email.subject }}</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="label">From</div>
+                    <div class="value">{{ email.from_email }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">To</div>
+                    <div class="value">{{ email.to_email }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Received</div>
+                    <div class="value">{{ email.received_at.strftime('%d %b %Y %H:%M') if email.received_at else '-' }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Type</div>
+                    <div class="value">{{ email.email_type.value | upper if email.email_type else 'OTHER' }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Urgency</div>
+                    <div class="value">{{ email.urgency | upper }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Status</div>
+                    <div class="value">{{ email.status.value | upper if email.status else 'NEW' }}</div>
+                </div>
+            </div>
+
+            <h3 style="font-size: 14px; color: #666; margin-bottom: 8px;">Email Body</h3>
+            <div class="email-body">{{ email.body_text }}</div>
+
+            <div style="margin-top: 20px; padding: 16px; background: #f9f9f9; border-radius: 8px;">
+                <h3 style="font-size: 14px; color: #666; margin-bottom: 10px;">Correct Classification (Teach the Agent)</h3>
+                <p style="font-size: 12px; color: #999; margin-bottom: 10px;">If the agent classified this email wrong, pick the correct type below. The agent will learn from this.</p>
+                <select id="correct-type" style="padding: 8px; border-radius: 6px; border: 1px solid #ddd; margin-right: 8px;">
+                    <option value="">Select correct type...</option>
+                    <option value="rfq">RFQ (Request for Quote)</option>
+                    <option value="po">PO (Purchase Order)</option>
+                    <option value="negotiation">Negotiation</option>
+                    <option value="delivery_query">Delivery Query</option>
+                    <option value="technical">Technical Question</option>
+                    <option value="complaint">Complaint</option>
+                    <option value="spam">Spam</option>
+                    <option value="other">Other</option>
+                </select>
+                <input type="text" id="correct-reason" placeholder="Why? (optional)" style="padding: 8px; border-radius: 6px; border: 1px solid #ddd; width: 250px;">
+                <button onclick="correctClass()" class="btn">Submit Correction</button>
+                <span id="correct-msg" style="margin-left: 12px; color: #2e7d32; font-size: 13px;"></span>
+            </div>
+        </div>
+
+        <script>
+        async function correctClass() {
+            const correct_type = document.getElementById('correct-type').value;
+            const reason = document.getElementById('correct-reason').value;
+            if (!correct_type) {
+                alert('Please select the correct type');
+                return;
+            }
+            try {
+                const resp = await fetch('/api/email/{{ email.id }}/correct', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email_id: {{ email.id }}, correct_type: correct_type, reason: reason})
+                });
+                const data = await resp.json();
+                if (resp.ok) {
+                    document.getElementById('correct-msg').textContent = 'Correction saved. Agent will learn from this.';
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    alert('Error: ' + (data.detail || 'Unknown'));
+                }
+            } catch(e) {
+                alert('Error: ' + e.message);
+            }
+        }
+        </script>
+
+        {% if bom_items %}
+        <div class="section">
+            <h2>Extracted BOM Items ({{ bom_items | length }})</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>MPN</th>
+                        <th>Manufacturer</th>
+                        <th>Description</th>
+                        <th>Qty</th>
+                        <th>Target Price</th>
+                        <th>Line Status</th>
+                        <th>Alternative</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in bom_items %}
+                    <tr>
+                        <td><strong>{{ item.mpn }}</strong></td>
+                        <td>{{ item.manufacturer or '-' }}</td>
+                        <td>{{ item.description or '-' }}</td>
+                        <td>{{ item.quantity or '-' }}</td>
+                        <td>{{ item.target_price or '-' }}</td>
+                        <td>
+                            {% if item.line_status == 'green' %}
+                                <span class="badge badge-green">AUTHORIZED</span>
+                            {% elif item.line_status == 'amber' %}
+                                <span class="badge badge-amber">ALTERNATIVE</span>
+                            {% else %}
+                                <span class="badge badge-red">NO MATCH</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.authorized_brand %}
+                                {{ item.authorized_brand }} - {{ item.alternative_mpn or 'TBD' }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if quotations %}
+        <div class="section">
+            <h2>Related Quotations</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Quote #</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for q in quotations %}
+                    <tr>
+                        <td><strong>{{ q.quote_number }}</strong></td>
+                        <td>{{ q.status.value | upper }}</td>
+                        <td>{{ q.created_at.strftime('%d %b %Y %H:%M') if q.created_at else '-' }}</td>
+                        <td><a href="/quote/{{ q.id }}" class="btn">Review</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

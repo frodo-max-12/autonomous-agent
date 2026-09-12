@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SemiSales AI Agent - Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 24px; font-weight: 600; }
+        .header .subtitle { font-size: 13px; opacity: 0.7; margin-top: 4px; }
+        .header .status { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+        .header .status .dot { width: 10px; height: 10px; background: #00e676; border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        .nav { background: #16213e; padding: 0 40px; display: flex; gap: 0; }
+        .nav a { color: rgba(255,255,255,0.7); text-decoration: none; padding: 12px 20px; font-size: 14px; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .nav a:hover, .nav a.active { color: white; border-bottom-color: #4fc3f7; }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 30px 40px; }
+
+        .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .stat-card .label { font-size: 13px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-card .value { font-size: 36px; font-weight: 700; margin-top: 8px; }
+        .stat-card.rfq .value { color: #1976d2; }
+        .stat-card.pending .value { color: #f57c00; }
+        .stat-card.total .value { color: #1a1a2e; }
+        .stat-card.escalated .value { color: #d32f2f; }
+
+        .section { background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .section h2 { font-size: 18px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 10px 12px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #666; border-bottom: 2px solid #e0e0e0; }
+        td { padding: 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+        tr:hover { background: #f8f9fa; }
+
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+        .badge-rfq { background: #e3f2fd; color: #1565c0; }
+        .badge-po { background: #e8f5e9; color: #2e7d32; }
+        .badge-negotiation { background: #fff3e0; color: #e65100; }
+        .badge-complaint { background: #fce4ec; color: #c62828; }
+        .badge-spam { background: #f5f5f5; color: #999; }
+        .badge-other { background: #f5f5f5; color: #666; }
+
+        .badge-new { background: #e3f2fd; color: #1565c0; }
+        .badge-acknowledged { background: #e8f5e9; color: #2e7d32; }
+        .badge-awaiting_approval { background: #fff8e1; color: #f57f17; }
+        .badge-escalated { background: #fce4ec; color: #c62828; }
+        .badge-sent { background: #e8f5e9; color: #2e7d32; }
+
+        .badge-high, .badge-critical { background: #fce4ec; color: #c62828; }
+        .badge-normal { background: #f5f5f5; color: #666; }
+
+        .btn { display: inline-block; padding: 8px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; text-decoration: none; transition: all 0.2s; }
+        .btn-primary { background: #1976d2; color: white; }
+        .btn-primary:hover { background: #1565c0; }
+        .btn-success { background: #2e7d32; color: white; }
+        .btn-success:hover { background: #1b5e20; }
+        .btn-warning { background: #f57c00; color: white; }
+        .btn-warning:hover { background: #e65100; }
+
+        .empty { text-align: center; padding: 40px; color: #999; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>SemiSales AI Agent</h1>
+            <div class="subtitle">Company B International & Company A</div>
+        </div>
+        <div class="status">
+            <div class="dot"></div>
+            Agent Running
+        </div>
+    </div>
+
+    <div class="nav">
+        <a href="/">Dashboard</a>
+        <a href="/emails">All Emails</a>
+        <a href="/quotations">Quotations</a>
+        <a href="/orders">Orders</a>
+        <a href="/vendors">Vendors</a>
+        <a href="/leads">Leads</a>
+    </div>
+
+    <div class="container">
+        <div class="stats" style="grid-template-columns: repeat(7, 1fr);">
+            <div class="stat-card total">
+                <div class="label">Total Emails</div>
+                <div class="value">{{ total_emails }}</div>
+            </div>
+            <div class="stat-card rfq">
+                <div class="label">RFQ Inquiries</div>
+                <div class="value">{{ rfq_count }}</div>
+            </div>
+            <div class="stat-card pricing">
+                <div class="label">Awaiting Pricing</div>
+                <div class="value" style="color: #e65100;">{{ awaiting_pricing }}</div>
+            </div>
+            <div class="stat-card pending">
+                <div class="label">Pending Approvals</div>
+                <div class="value">{{ pending_approvals }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">In Negotiation</div>
+                <div class="value" style="color: #f57c00;">{{ in_negotiation or 0 }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">PO Received</div>
+                <div class="value" style="color: #2e7d32;">{{ po_received or 0 }}</div>
+            </div>
+            <div class="stat-card escalated">
+                <div class="label">Escalated</div>
+                <div class="value">{{ escalated }}</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Pipeline — jump to each stage</h2>
+            <p style="color:#666; font-size:13px; margin-bottom:16px;">Follow an enquiry end-to-end: the customer's RFQ → the vendors we send it to → the quotation we return → the purchase order.</p>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px;">
+                <a href="/emails" style="text-decoration:none; color:inherit; display:block; border:1px solid #e0e0e0; border-left:4px solid #1976d2; border-radius:10px; padding:16px; transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)'" onmouseout="this.style.boxShadow='none'">
+                    <div style="font-size:12px; color:#1976d2; font-weight:700; text-transform:uppercase; letter-spacing:.5px;">1 · Customer RFQs</div>
+                    <div style="font-size:15px; font-weight:600; margin:6px 0 4px;">RFQ from Customer</div>
+                    <div style="font-size:12px; color:#777;">Inbound enquiries landing in the inbox →</div>
+                </a>
+                <a href="/quotations" style="text-decoration:none; color:inherit; display:block; border:1px solid #e0e0e0; border-left:4px solid #7b1fa2; border-radius:10px; padding:16px; transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)'" onmouseout="this.style.boxShadow='none'">
+                    <div style="font-size:12px; color:#7b1fa2; font-weight:700; text-transform:uppercase; letter-spacing:.5px;">2 · Vendor Sourcing</div>
+                    <div style="font-size:15px; font-weight:600; margin:6px 0 4px;">Send RFQ to which vendor</div>
+                    <div style="font-size:12px; color:#777;">Open a quotation → see the vendors we asked &amp; their cost quotes →</div>
+                </a>
+                <a href="/quotations" style="text-decoration:none; color:inherit; display:block; border:1px solid #e0e0e0; border-left:4px solid #2e7d32; border-radius:10px; padding:16px; transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)'" onmouseout="this.style.boxShadow='none'">
+                    <div style="font-size:12px; color:#2e7d32; font-weight:700; text-transform:uppercase; letter-spacing:.5px;">3 · Quotations</div>
+                    <div style="font-size:15px; font-weight:600; margin:6px 0 4px;">Quotation to Customer</div>
+                    <div style="font-size:12px; color:#777;">Consolidated quotes we send back to customers →</div>
+                </a>
+                <a href="/orders" style="text-decoration:none; color:inherit; display:block; border:1px solid #e0e0e0; border-left:4px solid #c62828; border-radius:10px; padding:16px; transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)'" onmouseout="this.style.boxShadow='none'">
+                    <div style="font-size:12px; color:#c62828; font-weight:700; text-transform:uppercase; letter-spacing:.5px;">4 · Purchase Orders</div>
+                    <div style="font-size:15px; font-weight:600; margin:6px 0 4px;">Customer PO → Vendor PO</div>
+                    <div style="font-size:12px; color:#777;">Orders won and the POs we place on vendors →</div>
+                </a>
+                <a href="/vendors" style="text-decoration:none; color:inherit; display:block; border:1px solid #e0e0e0; border-left:4px solid #455a64; border-radius:10px; padding:16px; transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)'" onmouseout="this.style.boxShadow='none'">
+                    <div style="font-size:12px; color:#455a64; font-weight:700; text-transform:uppercase; letter-spacing:.5px;">Reference</div>
+                    <div style="font-size:15px; font-weight:600; margin:6px 0 4px;">Vendor List</div>
+                    <div style="font-size:12px; color:#777;">The vendor master — brands, emails, priority →</div>
+                </a>
+                <a href="/leads" style="text-decoration:none; color:inherit; display:block; border:1px solid #e0e0e0; border-left:4px solid #f57c00; border-radius:10px; padding:16px; transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)'" onmouseout="this.style.boxShadow='none'">
+                    <div style="font-size:12px; color:#f57c00; font-weight:700; text-transform:uppercase; letter-spacing:.5px;">Reference</div>
+                    <div style="font-size:15px; font-weight:600; margin:6px 0 4px;">Leads</div>
+                    <div style="font-size:12px; color:#777;">Captured leads &amp; contacts →</div>
+                </a>
+            </div>
+        </div>
+
+        {% if pricing_quotes %}
+        <div class="section">
+            <h2 style="color: #e65100;">Quotations Awaiting Pricing from Purchase Team</h2>
+            <p style="color: #666; font-size: 13px; margin-bottom: 12px;">These RFQs have been forwarded to the purchase team. Pricing must be submitted before a quotation can be drafted.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Quote #</th>
+                        <th>Customer</th>
+                        <th>Company</th>
+                        <th>Account</th>
+                        <th>Currency</th>
+                        <th>Items</th>
+                        <th>Created</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for q in pricing_quotes %}
+                    <tr>
+                        <td><strong>{{ q.quote_number }}</strong></td>
+                        <td>{{ q.customer_name }}</td>
+                        <td>{{ q.customer_company }}</td>
+                        <td>{{ q.account }}</td>
+                        <td>{{ q.currency }}</td>
+                        <td>{{ q.line_items | length if q.line_items else 0 }}</td>
+                        <td>{{ q.created_at.strftime('%d %b %Y %H:%M') if q.created_at else '-' }}</td>
+                        <td><a href="/quote/{{ q.id }}" class="btn btn-warning">Submit Pricing</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if pending_quotes %}
+        <div class="section">
+            <h2>Quotations Awaiting Your Approval</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Quote #</th>
+                        <th>Customer</th>
+                        <th>Company</th>
+                        <th>Account</th>
+                        <th>Currency</th>
+                        <th>Created</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for q in pending_quotes %}
+                    <tr>
+                        <td><strong>{{ q.quote_number }}</strong></td>
+                        <td>{{ q.customer_name }}</td>
+                        <td>{{ q.customer_company }}</td>
+                        <td>{{ q.account }}</td>
+                        <td>{{ q.currency }}</td>
+                        <td>{{ q.created_at.strftime('%d %b %Y %H:%M') if q.created_at else '-' }}</td>
+                        <td><a href="/quote/{{ q.id }}" class="btn btn-warning">Review & Approve</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <div class="section">
+            <h2>Recent Emails</h2>
+            {% if recent_emails %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>From</th>
+                        <th>Subject</th>
+                        <th>Type</th>
+                        <th>Urgency</th>
+                        <th>Status</th>
+                        <th>Received</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in recent_emails %}
+                    <tr>
+                        <td>{{ e.from_name or e.from_email }}</td>
+                        <td>{{ e.subject[:60] }}{% if e.subject|length > 60 %}...{% endif %}</td>
+                        <td><span class="badge badge-{{ e.email_type.value if e.email_type else 'other' }}">{{ e.email_type.value if e.email_type else 'other' }}</span></td>
+                        <td><span class="badge badge-{{ e.urgency or 'normal' }}">{{ e.urgency or 'normal' }}</span></td>
+                        <td><span class="badge badge-{{ e.status.value if e.status else 'new' }}">{{ e.status.value if e.status else 'new' }}</span></td>
+                        <td>{{ e.received_at.strftime('%d %b %H:%M') if e.received_at else '-' }}</td>
+                        <td><a href="/email/{{ e.id }}" class="btn btn-primary">View</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty">No emails processed yet. The agent is monitoring your inbox...</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Auto-refresh stats every 30 seconds
+        setInterval(async () => {
+            try {
+                const resp = await fetch('/api/stats');
+                const data = await resp.json();
+                const cards = document.querySelectorAll('.stat-card');
+                cards[0].querySelector('.value').textContent = data.total_emails;
+                cards[1].querySelector('.value').textContent = data.rfq_count;
+                cards[2].querySelector('.value').textContent = data.awaiting_pricing;
+                cards[3].querySelector('.value').textContent = data.pending_approvals;
+                cards[4].querySelector('.value').textContent = data.in_negotiation || 0;
+                cards[5].querySelector('.value').textContent = data.po_received || 0;
+                cards[6].querySelector('.value').textContent = data.escalated;
+            } catch(e) {}
+        }, 30000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,273 @@
+{
+  "metadata": {
+    "version": "2.0",
+    "last_updated": "2026-04-10",
+    "companies": [
+      {
+        "name": "Company B Pte. Ltd.",
+        "location": "Singapore",
+        "currency": "USD",
+        "email": "admin@company-b.example"
+      },
+      {
+        "name": "Company A Pvt. Ltd.",
+        "location": "Pune, India",
+        "currency": "INR",
+        "email": "harshada@company-a.example"
+      }
+    ]
+  },
+  "categories": {
+    "connectors_switches": {
+      "display_name": "Connectors & Switches",
+      "brands": [
+        {
+          "name": "Schurter",
+          "products": ["Fuses", "Connectors", "Switches", "EMC Products"]
+        },
+        {
+          "name": "Amphenol India",
+          "products": ["Board-to-Board", "Wire-to-Board", "Circular Connectors", "IC Sockets", "I/O Connectors", "Wire Harness"]
+        },
+        {
+          "name": "Greenconn",
+          "products": ["Board-to-Board", "Wire-to-Board", "Automotive Connector", "Floating Connectors", "I/O Connectors"]
+        },
+        {
+          "name": "Anyconn",
+          "products": ["Board-to-Board", "Wire-to-Board", "Terminal Block", "I/O Connector", "Wire Harness"]
+        },
+        {
+          "name": "Phoenix Contact",
+          "products": ["PCB Connectors", "Terminal Block", "Board-to-Board Connector", "Cables"]
+        },
+        {
+          "name": "Antenk",
+          "products": ["PCB Connectors", "Wire-to-Board", "Rectangular", "Circular I/O", "Male/Female Pin Headers"]
+        },
+        {
+          "name": "Zhejiang Jinja",
+          "products": ["USB Type-C", "Micro Phone Jack", "RJ45 Jack", "USB Connector", "DC Power Jack", "FCP Connector"]
+        },
+        {
+          "name": "KLS Electronic",
+          "products": ["Switches", "Connectors", "Antennas", "Ethernet Connector", "Waterproof Connector", "Battery Connector"]
+        },
+        {
+          "name": "TE Connectivity",
+          "products": ["Connectors", "Relays", "Sensors", "Wire & Cable Management", "Antenna", "Heat Sink", "EMI Solution"]
+        },
+        {
+          "name": "Diptronics",
+          "products": ["Illuminated Switch", "DIP Switch", "TACT Switch", "Rotary Coded Switch", "Slide Switch"]
+        },
+        {
+          "name": "Knitter-Switch",
+          "products": ["Toggle Switch", "Pushbutton Switch", "Illuminated Tact Switch", "Slide Switch", "Dual-in-line Switch", "Rotary Switch"]
+        },
+        {
+          "name": "Degson",
+          "products": ["Terminal Blocks", "Circular Connectors", "Din-Rail Terminal Block"]
+        }
+      ]
+    },
+    "discrete_semiconductors": {
+      "display_name": "Discrete Semiconductors",
+      "brands": [
+        {
+          "name": "CDIL",
+          "products": ["Diodes", "Transistors", "Rectifiers", "Regulators", "MOSFETs", "TRIAC", "SCR", "IC Devices"]
+        },
+        {
+          "name": "Rectron",
+          "products": ["TVS Diode", "Bridge Rectifier", "ESD Diode", "Schottky Diode", "MOSFET"]
+        },
+        {
+          "name": "Diotec Semiconductor",
+          "products": ["Schottky Diode", "SiC Schottky Diode", "Zener Diode", "Transistor", "MOSFET"]
+        },
+        {
+          "name": "SMC Diode Solutions",
+          "products": ["Diodes", "Rectifiers", "MOSFET", "ESD Protection", "Thyristor"]
+        },
+        {
+          "name": "Goford Semiconductor",
+          "products": ["Trench MOSFET", "Planar MOSFET", "Multi-epi SJ MOSFET"]
+        },
+        {
+          "name": "Nexgen Power",
+          "products": ["IGBT", "Super Junction MOSFET"]
+        },
+        {
+          "name": "HY Group",
+          "products": ["Rectifier", "Bridge Rectifier", "TVS Diode", "Zener Diode", "MOSFET"]
+        }
+      ]
+    },
+    "power_management": {
+      "display_name": "Power Management ICs",
+      "brands": [
+        {
+          "name": "Silergy",
+          "products": ["Battery Management ICs", "DC-DC Regulator", "AC-DC Regulator", "Protection Switch IC", "Motor Driver"]
+        },
+        {
+          "name": "SGMicro",
+          "products": ["LDO", "Amplifier", "LED Driver", "Load Switch IC", "Comparator", "Temp Sensor", "Voltage Sensor"]
+        },
+        {
+          "name": "CLAF Power",
+          "products": ["DC-DC Converters", "AC-DC Converter"]
+        },
+        {
+          "name": "CXW IC",
+          "products": ["USB PD Solution", "DC/DC Converter", "Power Management ICs"]
+        },
+        {
+          "name": "UTC (Unisonic)",
+          "products": ["Power Management ICs", "Transistor", "Power MOSFET", "IGBT", "TRIAC", "SCR", "Diode", "Photocoupler"]
+        },
+        {
+          "name": "Weltrend",
+          "products": ["USB PD Controller", "USB HID Controller", "MCU", "Motor Controllers", "Motor Drivers", "Power Management ICs"]
+        }
+      ]
+    },
+    "mcu_memory_logic": {
+      "display_name": "MCU / Memory / Logic",
+      "brands": [
+        {
+          "name": "GigaDevice",
+          "products": ["Flash Memory", "32-bit Microcontroller", "Power ICs", "Motor Drivers"]
+        },
+        {
+          "name": "Fudan Micro",
+          "products": ["EEPROM", "SPI NOR Flash", "SPI NAND Flash", "Parallel NAND Flash", "ASNVM", "Memory ICs", "MCU"]
+        },
+        {
+          "name": "Megawin",
+          "products": ["Microcontrollers (MCU)"]
+        },
+        {
+          "name": "Intelligent Memory",
+          "products": ["DRAM", "SDRAM", "DDR4", "DRAM Modules", "NAND Flash"]
+        },
+        {
+          "name": "Netsol",
+          "products": ["STT-MRAM", "Asynchronous SRAM"]
+        },
+        {
+          "name": "DAPU",
+          "products": ["Real Time Clock Chip", "Ethernet PHY", "Clock Buffer", "Crystal Resonator", "Crystal Oscillator"]
+        }
+      ]
+    },
+    "sensors_displays": {
+      "display_name": "Sensors & Displays",
+      "brands": [
+        {
+          "name": "TDK Micronas",
+          "products": ["Hall Sensors", "Linear Hall-Effect Sensors", "Angle Sensor", "Current Sensing ICs"]
+        },
+        {
+          "name": "TAIMI",
+          "products": ["Ceramic Pressure Sensor", "Waterproof Ultrasonic Sensor", "Piezo Transducer", "Gas Flow Sensor"]
+        },
+        {
+          "name": "Novosens",
+          "products": ["CAN Transceiver", "Amplifiers", "Gate Drivers", "LDO", "Power Management ICs", "Pressure Sensor"]
+        },
+        {
+          "name": "Sonytek",
+          "products": ["LCD Display", "TFT Display", "Touch Panel", "Graphic Display"]
+        },
+        {
+          "name": "DWIN",
+          "products": ["HMI/LVDS LCD Modules", "TFT LCD Panel", "LCD Accessories", "Android/Linux LCD Module"]
+        },
+        {
+          "name": "Seoul Semiconductor",
+          "products": ["Automotive Lighting", "Indoor/Outdoor Lighting", "LEDs"]
+        }
+      ]
+    },
+    "passives_electromechanical": {
+      "display_name": "Passives & Electromechanical",
+      "brands": [
+        {
+          "name": "SETfuse",
+          "products": ["Over Temperature Protection", "Voltage Protection", "Current Protection", "Active Protection"]
+        },
+        {
+          "name": "Nanjing Electric",
+          "products": ["NTC Thermistor", "PTC Thermistor", "Voltage Varistor", "Temperature Sensors"]
+        },
+        {
+          "name": "PSA",
+          "products": ["MLCC", "Chip Resistor", "Inductor"]
+        },
+        {
+          "name": "Coilmaster",
+          "products": ["Automotive Grade Inductor", "High Power Inductor", "Through Hole Inductor", "Power Inductor"]
+        },
+        {
+          "name": "3L Coils",
+          "products": ["Inductor", "Molded Power Choke", "Ferrite SMT Power Choke", "Wireless Charger"]
+        },
+        {
+          "name": "Ze Ming Lang Xi",
+          "products": ["Split Core Current Transformer", "Three Phase CT", "Mini Precision Current Transformer"]
+        },
+        {
+          "name": "Jackcon",
+          "products": ["Aluminum Electrolytic Capacitor", "Ceramic Capacitor", "Film Capacitor"]
+        },
+        {
+          "name": "Kingstate",
+          "products": ["Piezo Buzzer", "Magnetic Buzzer", "Speaker", "Dynamic Receiver", "Microphone"]
+        },
+        {
+          "name": "Hokuriku",
+          "products": ["Chip Resistor", "NTC Thermistor", "Fixed Resistor", "Variable Resistor"]
+        },
+        {
+          "name": "Standex Electronics",
+          "products": ["Relays", "Optocoupler", "Reed Switches", "Fluid Sensor", "Floats"]
+        },
+        {
+          "name": "Hongfa",
+          "products": ["Relays", "Current Sensors"]
+        },
+        {
+          "name": "Indie Semiconductor",
+          "products": ["Wireless Charging ICs", "Lighting Driver", "ADAS Solution"]
+        }
+      ]
+    },
+    "fans_cooling_other": {
+      "display_name": "Fans, Cooling & Other",
+      "brands": [
+        {
+          "name": "Cooltron",
+          "products": ["AC Fan", "DC Fan", "AC Blowers", "DC Blowers", "EC Axial Fan", "Fan Accessories"]
+        },
+        {
+          "name": "MEGA",
+          "products": ["AC Axial Fan", "DC Axial Fan", "AC Blowers", "DC Blowers", "EC Axial Fan", "Blower"]
+        },
+        {
+          "name": "Song Chuan",
+          "products": ["Electromechanical Relays", "Electronic Relays", "Relay Sockets", "Power Relays"]
+        },
+        {
+          "name": "Socle Technology",
+          "products": ["Power Isolation", "WiFi Module", "BLE Module", "Optoelectronic Components", "Sensors"]
+        },
+        {
+          "name": "Arduino",
+          "products": ["Project Kits", "Robotics", "Prototyping"]
+        }
+      ]
+    }
+  }
+}

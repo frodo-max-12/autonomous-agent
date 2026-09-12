@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emails - SemiSales AI Agent</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 20px 40px; }
+        .header h1 { font-size: 24px; }
+        .nav { background: #16213e; padding: 0 40px; display: flex; gap: 0; }
+        .nav a { color: rgba(255,255,255,0.7); text-decoration: none; padding: 12px 20px; font-size: 14px; border-bottom: 2px solid transparent; }
+        .nav a:hover, .nav a.active { color: white; border-bottom-color: #4fc3f7; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 30px 40px; }
+        .filters { display: flex; gap: 8px; margin-bottom: 20px; }
+        .filter-btn { padding: 6px 16px; border-radius: 20px; font-size: 13px; text-decoration: none; border: 1px solid #ddd; color: #666; background: white; }
+        .filter-btn.active { background: #1976d2; color: white; border-color: #1976d2; }
+        .section { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 10px 12px; font-size: 12px; text-transform: uppercase; color: #666; border-bottom: 2px solid #e0e0e0; }
+        td { padding: 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+        tr:hover { background: #f8f9fa; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+        .badge-rfq { background: #e3f2fd; color: #1565c0; }
+        .badge-po { background: #e8f5e9; color: #2e7d32; }
+        .badge-negotiation { background: #fff3e0; color: #e65100; }
+        .badge-complaint { background: #fce4ec; color: #c62828; }
+        .badge-spam { background: #f5f5f5; color: #999; }
+        .badge-other { background: #f5f5f5; color: #666; }
+        .badge-technical { background: #f3e5f5; color: #7b1fa2; }
+        .badge-delivery_query { background: #e0f7fa; color: #00695c; }
+        .badge-acknowledged { background: #e8f5e9; color: #2e7d32; }
+        .badge-awaiting_approval { background: #fff8e1; color: #f57f17; }
+        .badge-escalated { background: #fce4ec; color: #c62828; }
+        .badge-new { background: #e3f2fd; color: #1565c0; }
+        .badge-sent { background: #e8f5e9; color: #2e7d32; }
+        .badge-high, .badge-critical { background: #fce4ec; color: #c62828; }
+        .badge-normal { background: #f5f5f5; color: #666; }
+        .btn { padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none; background: #1976d2; color: white; }
+        .empty { text-align: center; padding: 40px; color: #999; }
+    </style>
+</head>
+<body>
+    <div class="header"><h1>SemiSales AI Agent</h1></div>
+    <div class="nav">
+        <a href="/">Dashboard</a>
+        <a href="/emails">All Emails</a>
+        <a href="/quotations">Quotations</a>
+        <a href="/orders">Orders</a>
+        <a href="/vendors">Vendors</a>
+        <a href="/leads">Leads</a>
+    </div>
+
+    <div class="container">
+        <div class="filters">
+            <a href="/emails" class="filter-btn {% if not filter_type %}active{% endif %}">All</a>
+            <a href="/emails?email_type=rfq" class="filter-btn {% if filter_type == 'rfq' %}active{% endif %}">RFQ</a>
+            <a href="/emails?email_type=po" class="filter-btn {% if filter_type == 'po' %}active{% endif %}">PO</a>
+            <a href="/emails?email_type=negotiation" class="filter-btn {% if filter_type == 'negotiation' %}active{% endif %}">Negotiation</a>
+            <a href="/emails?email_type=complaint" class="filter-btn {% if filter_type == 'complaint' %}active{% endif %}">Complaint</a>
+            <a href="/emails?email_type=technical" class="filter-btn {% if filter_type == 'technical' %}active{% endif %}">Technical</a>
+        </div>
+
+        <div class="section">
+            {% if emails %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>From</th>
+                        <th>Subject</th>
+                        <th>Type</th>
+                        <th>Urgency</th>
+                        <th>Status</th>
+                        <th>Account</th>
+                        <th>Received</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in emails %}
+                    <tr>
+                        <td>{{ e.id }}</td>
+                        <td>{{ e.from_name or e.from_email }}</td>
+                        <td>{{ e.subject[:50] }}{% if e.subject|length > 50 %}...{% endif %}</td>
+                        <td><span class="badge badge-{{ e.email_type.value if e.email_type else 'other' }}">{{ e.email_type.value if e.email_type else 'other' }}</span></td>
+                        <td><span class="badge badge-{{ e.urgency or 'normal' }}">{{ e.urgency or 'normal' }}</span></td>
+                        <td><span class="badge badge-{{ e.status.value if e.status else 'new' }}">{{ e.status.value if e.status else 'new' }}</span></td>
+                        <td>{{ e.account }}</td>
+                        <td>{{ e.received_at.strftime('%d %b %H:%M') if e.received_at else '-' }}</td>
+                        <td><a href="/email/{{ e.id }}" class="btn">View</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty">No emails found.</div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

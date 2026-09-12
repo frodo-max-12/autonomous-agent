@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>autonomous-agent — System Architecture</title>
+<style>
+  :root { --ink:#23272a; --muted:#5c6570; --bg:#f4f2ee; --card:#fff; --line:#d9d4ca; --teal:#0f766e; --teal-soft:#d9f0ec; --rust:#b45309; --rust-soft:#fdeedd; --violet:#6d28d9; --violet-soft:#ede6fb; --slate:#475569; --mono:"SF Mono",Menlo,ui-monospace,"Courier New",monospace; }
+  * { box-sizing:border-box; margin:0; }
+  body { font:14px/1.5 "Helvetica Neue",Helvetica,Arial,sans-serif; color:var(--ink); background:var(--bg); padding-bottom:60px; }
+  header { padding:26px 36px 18px; background:var(--card); border-bottom:1px solid var(--line); }
+  header h1 { font-family:var(--mono); font-size:24px; } header h1 span { color:var(--teal); }
+  header p.sub { color:var(--muted); margin-top:6px; max-width:900px; }
+  .promise { margin-top:12px; max-width:760px; font-family:var(--mono); font-size:12px; background:var(--ink); color:#e8e6e1; padding:9px 14px; border-left:5px solid var(--teal); } .promise b { color:#5eead4; }
+  main { max-width:1500px; margin:0 auto; padding:22px 36px; }
+  .layout { display:grid; grid-template-columns:minmax(0,1fr) 380px; gap:20px; align-items:start; }
+  @media (max-width:1100px) { .layout { grid-template-columns:1fr; } }
+  .lane { border-top:3px solid var(--teal); padding:12px 0 6px; margin-bottom:10px; } .lane.post { border-top-color:var(--rust); } .lane.rail { border-top-color:var(--violet); }
+  .lanehead { display:flex; align-items:baseline; gap:12px; margin-bottom:10px; }
+  .lanehead h2 { font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); } .lane.post h2 { color:var(--rust); } .lane.rail h2 { color:var(--violet); }
+  .lanehead .sub { font-size:12px; color:var(--muted); }
+  .row { display:flex; flex-wrap:wrap; gap:9px; align-items:stretch; }
+  .stage { flex:1 1 150px; min-width:148px; background:var(--card); border:2px solid var(--teal); padding:10px 11px 9px; cursor:pointer; transition:all .15s; }
+  .lane.post .stage { border-color:var(--rust); } .lane.rail .stage { border-color:var(--violet); }
+  .stage:hover { transform:translateY(-1px); box-shadow:0 4px 14px rgba(35,39,42,.12); } .stage.active { box-shadow:0 0 0 3px var(--teal-soft); }
+  .stage.gate { background:var(--teal-soft); } .stage.human { background:var(--rust-soft); }
+  .stage .num { font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--teal); letter-spacing:.08em; margin-bottom:4px; } .lane.post .num { color:var(--rust); } .lane.rail .num { color:var(--violet); }
+  .stage h3 { font-size:13.5px; margin-bottom:3px; } .stage p { font-size:11.3px; color:var(--muted); }
+  .stage .mod { display:block; font-family:var(--mono); font-size:9.5px; color:var(--slate); margin-top:6px; }
+  .arrow { font-family:var(--mono); align-self:center; color:#a8a29e; font-size:12px; flex:0 0 auto; }
+  .panel { position:sticky; top:16px; border:2px solid var(--teal); background:var(--card); padding:18px 20px; min-height:340px; }
+  .panel h2 { font-family:var(--mono); font-size:17px; color:var(--teal); margin-bottom:2px; } .panel .role { font-size:12.5px; color:var(--muted); font-style:italic; margin-bottom:10px; }
+  .panel .mods { font-family:var(--mono); font-size:11px; background:var(--bg); border:1px solid var(--line); padding:7px 10px; margin-bottom:12px; white-space:pre-line; }
+  .panel h4 { font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin:12px 0 5px; }
+  .panel ul { padding-left:17px; } .panel li { font-size:12.8px; margin-bottom:5px; } .panel li::marker { color:var(--teal); }
+  .strips { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:12px; margin-top:8px; }
+  .strip { border:1.5px dashed var(--line); background:var(--card); padding:13px 17px; }
+  .strip h3 { font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:8px; } .strip li { font-size:13px; margin:4px 0 0 16px; } .strip li::marker { color:var(--teal); }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; } .chip { font-family:var(--mono); font-size:11px; padding:3px 8px; background:var(--violet-soft); color:var(--violet); border:1px solid #d9cdf5; }
+  footer { font-family:var(--mono); text-align:center; color:var(--muted); font-size:11.5px; margin-top:22px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>autonomous-<span>agent</span></h1>
+  <p class="sub">One process that runs the whole quote cycle for a semiconductor distributor. Click any box for stage-level detail.</p>
+  <div class="promise"><b>the rule:</b> the model judges, the code computes. no price, FX rate or duty is ever invented — a missing number blocks the line, never auto-sends it.</div>
+</header>
+<main><div class="layout"><div>
+<div class="lane"><div class="lanehead"><h2>The loop</h2><span class="sub">one process, role-staged, two-minute monitor</span></div><div class="row">
+  <div class="stage" data-k="poll"><div class="num">01</div><h3>Poll inbox</h3><p>Gmail, vendor-thread guard</p><span class="mod">core/agent.py</span></div><div class="arrow">▶</div>
+  <div class="stage" data-k="classify"><div class="num">02</div><h3>Classify</h3><p>Spam · RFQ · vendor reply · order</p><span class="mod">core/email_processor.py</span></div><div class="arrow">▶</div>
+  <div class="stage" data-k="bom"><div class="num">03</div><h3>Extract BOM</h3><p>Body + Excel/PDF/CSV, grounded lookup</p><span class="mod">core/bom_extractor.py</span></div><div class="arrow">▶</div>
+  <div class="stage" data-k="linecard"><div class="num">04</div><h3>Line card + ACK</h3><p>54 lines, cross-refs, acknowledgement</p><span class="mod">knowledge/</span></div><div class="arrow">▶</div>
+  <div class="stage" data-k="source"><div class="num">05</div><h3>Source</h3><p>One RFQ per vendor, customer hidden</p><span class="mod">core/vendor_sourcing.py</span></div><div class="arrow">▶</div>
+  <div class="stage" data-k="consolidate"><div class="num">06</div><h3>Consolidate</h3><p>Cheapest cover, split, NO BID</p><span class="mod">core/consolidation.py</span></div><div class="arrow">▶</div>
+  <div class="stage" data-k="price"><div class="num">07</div><h3>Price</h3><p>Landed cost + margin precedence</p><span class="mod">core/margin_engine.py</span></div><div class="arrow">▶</div>
+  <div class="stage gate" data-k="gate"><div class="num">08</div><h3>Confidence gate</h3><p>Six conditions or hold with reason</p><span class="mod">finalize_autonomous_quote()</span></div>
+</div></div>
+<div class="lane post"><div class="lanehead"><h2>After the quote</h2><span class="sub">negotiation, orders, learning, oversight</span></div><div class="row">
+  <div class="stage" data-k="neg"><div class="num">NEG</div><h3>Negotiation</h3><p>Trim to floor or re-ask vendors</p><span class="mod">core/email_processor.py</span></div>
+  <div class="stage" data-k="po"><div class="num">PO</div><h3>Orders</h3><p>Expired-quote guard, vendor POs</p><span class="mod">core/order_processing.py</span></div>
+  <div class="stage" data-k="learn"><div class="num">LRN</div><h3>Learning</h3><p>Scorecard feeds routing</p><span class="mod">core/learning.py</span></div>
+  <div class="stage human" data-k="dash"><div class="num">HUMAN</div><h3>Dashboard</h3><p>Held quotes, vendors, orders</p><span class="mod">dashboard/app.py</span></div>
+</div></div>
+<div class="lane rail"><div class="lanehead"><h2>Rails</h2><span class="sub">what every stage leans on</span></div><div class="row">
+  <div class="stage" data-k="know"><div class="num">KNOW</div><h3>Knowledge</h3><p>Line card, aliases, x-refs, playbook</p><span class="mod">knowledge/</span></div>
+  <div class="stage" data-k="llm"><div class="num">LLM</div><h3>Model client</h3><p>Prompts; code computes numbers</p><span class="mod">llm/claude_client.py</span></div>
+  <div class="stage" data-k="cfg"><div class="num">CFG</div><h3>Configuration</h3><p>Typed settings, testing mode, caps</p><span class="mod">config/settings.py</span></div>
+  <div class="stage" data-k="ops"><div class="num">OPS</div><h3>Deploy</h3><p>systemd, Windows service, preflight</p><span class="mod">deploy/</span></div>
+  <div class="stage" data-k="test"><div class="num">TEST</div><h3>Tests</h3><p>174 consolidation assertions</p><span class="mod">tests/</span></div>
+</div></div>
+<div class="strips">
+  <div class="strip"><h3>The human's whole job</h3><ul><li>Finish the lines the gate held, reason already on screen.</li><li>Add or rank vendors; close deals so the scorecard learns.</li><li>Flip AGENT_MODE from testing to automatic when drafts look right.</li></ul></div>
+  <div class="strip"><h3>Stack</h3><div class="chips"><span class="chip">Python</span><span class="chip">SQLite</span><span class="chip">Gmail API</span><span class="chip">LLM API</span><span class="chip">pydantic</span><span class="chip">FastAPI dashboard</span><span class="chip">systemd</span><span class="chip">Windows service</span></div></div>
+</div>
+</div>
+<aside class="panel" id="panel"><h2>autonomous-agent</h2><div class="role">Click any box on the left.</div><h4>What this is</h4>
+<ul><li>A single process, role-staged rather than multi-agent: sales intake → purchase/sourcing → quote analyst → customer quote.</li><li>Everything is gated by AUTONOMOUS_ENABLED and AGENT_MODE; testing mode emails nobody and drafts everything to the dashboard.</li><li>Humans only touch what the confidence gate holds.</li></ul></aside>
+</div><footer>autonomous-agent · static hero image: docs/architecture.png · source: docs/architecture-static.html</footer></main>
+<script>
+const D={
+poll:{t:"Poll inbox",r:"The two-minute monitor",m:"core/agent.py · gmail/client.py",p:["The orchestrator polls Gmail on a two-minute loop and triggers check-vendor-replies → maybe-consolidate → finalize.","A reply on a known vendor-RFQ thread is recognised by thread and routed to reply parsing, never treated as a new customer inquiry.","Everything below is gated by AUTONOMOUS_ENABLED; with it off the agent falls back to the internal-team pricing flow."]},
+classify:{t:"Classify",r:"Cheap triage before any expensive step",m:"core/email_processor.py",p:["A small model classifies each message: spam, RFQ, vendor reply, order, other.","Quote-number references and thank-you phrasing are explicit cues that a message is a reply to something the agent sent.","Spam is dropped before any BOM extraction runs."]},
+bom:{t:"Extract BOM",r:"Line items from whatever the customer sent",m:"core/bom_extractor.py · core/part_lookup.py",p:["Body text plus Excel, PDF and CSV attachments become structured line items.","A bare part number is resolved by a grounded external lookup rather than guessed by the model.","Part numbers are normalised via brand aliases so ST, STMicro and STMicroelectronics route the same way."]},
+linecard:{t:"Line card + acknowledgement",r:"What can we actually supply",m:"knowledge/line_card_manager.py · cross_reference.py · compliance_watchlist.py",p:["Each part is checked against the 54 authorised lines; unauthorised parts go to open-market brokers.","Alternatives are cross-referenced across every authorised line, not just one brand.","The acknowledgement to the customer leads with authorised parts and offers alternatives for the rest.","Dual-use parts (FPGA, RF, rad-hard, crypto) are tagged from a compliance watchlist and held for an end-user declaration."]},
+source:{t:"Source",r:"Fan out, without leaking",m:"core/vendor_sourcing.py",p:["Each part is routed to every vendor whose brands include the manufacturer, plus every open-market broker, ranked by priority and learned score and capped per part.","Parts are grouped so each vendor receives exactly one RFQ email with a standard table.","Vendor emails never reveal the end customer, only the internal quote number.","Threads are tracked so replies map back to the right quotation."]},
+consolidate:{t:"Consolidate",r:"The quote analyst's first half",m:"core/consolidation.py · core/fx.py",p:["Vendor replies are parsed into cost, currency, MOQ, SPQ, offered quantity, packaging, date code, validity and lead time.","Costs are normalised to the sale currency with live FX; the cheapest wins per part.","If the cheapest vendor's offered quantity can't cover the line, the balance is split to the next-cheapest and the line is priced at the blended landed cost.","No quote from any vendor is `no_bid`; a still-short line is `needs_review`. A packaging mismatch across a split is `needs_review` too."]},
+price:{t:"Price",r:"The quote analyst's second half",m:"core/margin_engine.py",p:["Resale is computed from landed cost plus margin. Margin precedence: per-quote override → category → brand → default.","FX carries a buffer so currency moves don't erode margin; a stored rate is required, never a guess.","The engine never invents a number. Missing FX or duty returns `blocked` and the line becomes `needs_review`.","Split lines are priced to landed cost per candidate, blended by allocated quantity, then one margin is applied."]},
+gate:{t:"Confidence gate",r:"The only place a human is required",m:"core/email_processor.py — finalize_autonomous_quote()",p:["Auto-send only in automatic mode and only when every line is priced, the currency was explicitly stated, every margin clears the floor, the total is under the cap, packaging is consistent, and no line is dual-use.","Any failure holds the quote on the dashboard with the exact reason logged.","A winning vendor quote whose validity has lapsed is re-sourced at PO time rather than committed at a stale cost."]},
+neg:{t:"Negotiation",r:"Meet the target without leaking it",m:"core/email_processor.py",p:["A customer target price is met by trimming margin to the configured floor.","If that isn't enough, vendors are re-asked for a capped percentage off their own cost.","The customer's target never appears in a vendor email."]},
+po:{t:"Orders",r:"From customer PO to vendor POs",m:"core/order_processing.py",p:["A customer PO passes an expired-quote guard, then one PO is drafted per winning vendor.","Confirmations, declines and dispatches are tracked from vendor replies.","A lapsed vendor quote is re-sourced, never committed at a stale cost."]},
+learn:{t:"Learning",r:"Outcomes feed routing",m:"core/learning.py · core/vendor_scorecard.py · core/lead_manager.py",p:["Outcome labels update a vendor scorecard that feeds routing priority on the next RFQ.","Contacts and leads are learned from traffic and can be cleaned with a script.","Transit lead times by origin inform delivery promises."]},
+dash:{t:"Dashboard",r:"Human oversight, deliberately narrow",m:"dashboard/app.py · templates/*.html · FastAPI",p:["Held quotes with the gate reason, vendor CRUD, sourcing review, order tracking, email and lead views.","Binds to localhost by default and refuses to start on a network interface without a dashboard user and password.","Refuses to start with the default secret key."]},
+know:{t:"Knowledge",r:"The desk's doctrine as data",m:"knowledge/line_card.json · brand_aliases.py · cross_reference.json · transit_to_sg.json · compliance_watchlist.py · intl_sales_playbook.py",p:["Line card of 54 authorised brands with categories. Brand aliases collapse spelling variants.","Cross-reference table for alternatives. Transit lead times by origin.","A compliance watchlist for dual-use parts.","A trading playbook distilled from real inbox traffic, injected into prompts so the model reasons like this desk."]},
+llm:{t:"Model client",r:"Reasoning only",m:"llm/claude_client.py",p:["Prompts for classification, BOM extraction and cross-reference engineering.","Light and heavy model tiers for triage versus extraction.","Every number the model touches is recomputed in code before it reaches a quote."]},
+cfg:{t:"Configuration",r:"Typed, with safe defaults",m:"config/settings.py · pydantic",p:["AGENT_MODE=testing drafts to the dashboard and emails nobody; automatic goes live.","VENDOR_TEST_EMAIL redirects every vendor RFQ during testing.","Caps: vendors per part, reply wait hours, minimum margin, negotiation floor, maximum vendor ask, auto-send value."]},
+ops:{t:"Deploy",r:"Runs unattended",m:"deploy/ai-agent.service · setup_vps.sh · DEPLOY-VPS.md · install_service.ps1",p:["A systemd unit for an Ubuntu VPS with a non-root service user.","A Windows service installer for on-prem.","An env example and a preflight check before first run."]},
+test:{t:"Tests",r:"The consolidation logic is the risky part",m:"tests/test_consolidation_scenarios.py",p:["174 assertions covering split sourcing, no-bid, FX normalisation, blended landed cost, packaging mismatch and stale-quote handling.","Scenario style: a vendor reply set in, an expected consolidation out."]}
+};
+const panel=document.getElementById('panel');
+document.querySelectorAll('.stage').forEach(s=>s.addEventListener('click',()=>{document.querySelectorAll('.stage').forEach(x=>x.classList.remove('active'));s.classList.add('active');const d=D[s.dataset.k];if(!d)return;panel.innerHTML=`<h2>${d.t}</h2><div class="role">${d.r}</div><div class="mods">${d.m}</div><h4>How it works</h4><ul>${d.p.map(x=>`<li>${x}</li>`).join('')}</ul>`;if(window.innerWidth<1100)panel.scrollIntoView({behavior:'smooth',block:'start'});}));
+</script>
+</body></html>

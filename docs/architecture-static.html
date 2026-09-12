@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Source for docs/architecture.png (the README hero image).
+     Regenerate after edits:
+     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new \
+       --disable-gpu --hide-scrollbars --force-device-scale-factor=2 \
+       --window-size=1600,1420 --screenshot=docs/architecture.png \
+       "file://$(pwd)/docs/architecture-static.html" -->
+<head>
+<meta charset="utf-8">
+<title>Autonomous Sales Agent — architecture (static)</title>
+<style>
+  :root {
+    --ink:#23272a; --muted:#5c6570; --bg:#f4f2ee; --card:#ffffff; --line:#d9d4ca;
+    --teal:#0f766e; --teal-soft:#d9f0ec; --rust:#b45309; --rust-soft:#fdeedd;
+    --violet:#6d28d9; --violet-soft:#ede6fb; --slate:#475569;
+    --mono:"SF Mono",Menlo,ui-monospace,"Courier New",monospace;
+  }
+  * { box-sizing:border-box; margin:0; }
+  html, body { width:1600px; background:var(--bg); }
+  body { font:14.5px/1.45 "Helvetica Neue",Helvetica,Arial,sans-serif; color:var(--ink); padding:34px 46px 26px; }
+
+  .head { display:flex; justify-content:space-between; align-items:flex-start; gap:36px; margin-bottom:18px; }
+  .head h1 { font-family:var(--mono); font-size:30px; font-weight:700; letter-spacing:-.01em; }
+  .head h1 span { color:var(--teal); }
+  .head .tag { font-size:16px; color:var(--muted); margin-top:8px; max-width:840px; }
+  .promise { font-family:var(--mono); font-size:12.5px; line-height:1.5; max-width:560px; background:var(--ink); color:#e8e6e1;
+             padding:12px 16px; border-left:5px solid var(--teal); }
+  .promise b { color:#5eead4; font-weight:700; }
+
+  .trace { font-family:var(--mono); font-size:13px; color:var(--muted); background:var(--card); border:1px solid var(--line);
+           padding:9px 16px; margin-bottom:20px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .trace b { color:var(--teal); font-weight:700; } .trace .a { color:#a8a29e; }
+  .trace .right { margin-left:auto; color:var(--rust); }
+
+  .lane { border-top:3px solid var(--teal); padding:14px 0 6px; margin-bottom:12px; }
+  .lane.post { border-top-color:var(--rust); } .lane.rail { border-top-color:var(--violet); }
+  .lanehead { display:flex; align-items:baseline; gap:14px; margin-bottom:12px; }
+  .lanehead h2 { font-family:var(--mono); font-size:13px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); }
+  .lane.post .lanehead h2 { color:var(--rust); } .lane.rail .lanehead h2 { color:var(--violet); }
+  .lanehead .sub { font-size:13px; color:var(--muted); }
+  .row { display:flex; gap:10px; align-items:stretch; }
+  .stage { flex:1; background:var(--card); border:2px solid var(--teal); padding:11px 12px 10px; position:relative; }
+  .lane.post .stage { border-color:var(--rust); } .lane.rail .stage { border-color:var(--violet); }
+  .stage .num { font-family:var(--mono); font-size:11px; font-weight:700; color:var(--teal); letter-spacing:.08em; margin-bottom:5px; }
+  .lane.post .stage .num { color:var(--rust); } .lane.rail .stage .num { color:var(--violet); }
+  .stage h3 { font-size:14.5px; font-weight:700; margin-bottom:4px; }
+  .stage p { font-size:11.9px; color:var(--muted); }
+  .stage .mod { display:block; font-family:var(--mono); font-size:10px; color:var(--slate); margin-top:7px; }
+  .arrow { font-family:var(--mono); align-self:center; color:#a8a29e; font-size:13px; flex:0 0 auto; }
+  .stage.gate { background:var(--teal-soft); }
+  .stage.human { background:var(--rust-soft); }
+
+  .strips { display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:12px; margin-top:8px; }
+  .strip { border:1.5px dashed var(--line); background:var(--card); padding:13px 17px 15px; }
+  .strip h3 { font-family:var(--mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:8px; }
+  .strip li { font-size:13.2px; margin:5px 0 0 16px; } .strip li::marker { color:var(--teal); }
+  .nums { display:grid; grid-template-columns:repeat(3,1fr); gap:10px 8px; }
+  .nums b { display:block; font-family:var(--mono); font-size:26px; font-weight:700; color:var(--teal); line-height:1; }
+  .nums span { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .chip { font-family:var(--mono); font-size:11px; padding:4px 8px; background:var(--violet-soft); color:var(--violet); border:1px solid #d9cdf5; }
+  .foot { font-family:var(--mono); text-align:center; color:var(--muted); font-size:11.5px; margin-top:16px; }
+</style>
+</head>
+<body>
+
+<div class="head">
+  <div>
+    <h1>autonomous-<span>agent</span></h1>
+    <div class="tag">One process that runs the whole quote cycle for a semiconductor distributor — inquiry in, vendor sourcing, lowest-cost consolidation, margin, and a confidence-gated quote back out. Humans only touch what the gate holds.</div>
+  </div>
+  <div class="promise"><b>the rule:</b> the model judges, the code computes. no price, FX rate or duty is ever invented — if a number is missing the line is <b>blocked</b>, never auto-sent.</div>
+</div>
+
+<div class="trace">
+  <b>inbox</b><span class="a">──▶</span><b>classify</b><span class="a">──▶</span><b>bom</b><span class="a">──▶</span><b>line card</b><span class="a">──▶</span>
+  <b>source</b><span class="a">──▶</span><b>consolidate</b><span class="a">──▶</span><b>price</b><span class="a">──▶</span><b>gate</b><span class="a">──▶</span><b>quote</b>
+  <span class="right">AGENT_MODE=testing | automatic</span>
+</div>
+
+<div class="lane">
+  <div class="lanehead"><h2>The loop</h2><span class="sub">one process, role-staged, on a two-minute monitor</span></div>
+  <div class="row">
+    <div class="stage"><div class="num">01</div><h3>Poll inbox</h3>
+      <p>Gmail poll on a 2-minute loop · a reply on a known vendor-RFQ thread is recognised and routed, never treated as a new inquiry</p>
+      <span class="mod">core/agent.py · gmail/client.py</span></div>
+    <div class="arrow">▶</div>
+    <div class="stage"><div class="num">02</div><h3>Classify</h3>
+      <p>Spam · RFQ · vendor reply · order · other · a small model does triage; quote-number and thank-you cues catch replies</p>
+      <span class="mod">core/email_processor.py</span></div>
+    <div class="arrow">▶</div>
+    <div class="stage"><div class="num">03</div><h3>Extract BOM</h3>
+      <p>Body + Excel / PDF / CSV attachments → line items · a bare part number is resolved by a grounded lookup, not guessed</p>
+      <span class="mod">core/bom_extractor.py · part_lookup.py</span></div>
+    <div class="arrow">▶</div>
+    <div class="stage"><div class="num">04</div><h3>Line card + ACK</h3>
+      <p>Each part checked against 54 authorised lines · alternatives cross-referenced across every line · acknowledgement to the customer leads with what we can supply</p>
+      <span class="mod">knowledge/line_card_manager.py · cross_reference.py</span></div>
+    <div class="arrow">▶</div>
+    <div class="stage"><div class="num">05</div><h3>Source</h3>
+      <p>Each part routed to vendors by brand plus open-market brokers · one RFQ per vendor · the end customer is never revealed · threads tracked</p>
+      <span class="mod">core/vendor_sourcing.py</span></div>
+    <div class="arrow">▶</div>
+    <div class="stage"><div class="num">06</div><h3>Consolidate</h3>
+      <p>Vendor replies parsed to cost, MOQ, SPQ, lead, offered qty · FX-normalised · cheapest wins · split across vendors if one can't cover · NO BID if none quote</p>
+      <span class="mod">core/consolidation.py · fx.py</span></div>
+    <div class="arrow">▶</div>
+    <div class="stage"><div class="num">07</div><h3>Price</h3>
+      <p>Landed cost + margin · precedence: per-quote → category → brand → default · FX buffer so moves don't erode margin · missing input → blocked</p>
+      <span class="mod">core/margin_engine.py</span></div>
+    <div class="arrow">▶</div>
+    <div class="stage gate"><div class="num">08</div><h3>Confidence gate</h3>
+      <p>Auto-send only if every line is priced, currency explicit, margins ≥ floor, total ≤ cap, packaging consistent, no dual-use part · else hold with the reason</p>
+      <span class="mod">finalize_autonomous_quote()</span></div>
+  </div>
+</div>
+
+<div class="lane post">
+  <div class="lanehead"><h2>After the quote</h2><span class="sub">negotiation, orders, and the learning that feeds back into routing</span></div>
+  <div class="row">
+    <div class="stage"><div class="num">NEG</div><h3>Negotiation</h3>
+      <p>A target price is met by trimming margin to the floor, or by re-asking vendors for a capped % off their own cost · the customer's target never leaks</p>
+      <span class="mod">core/email_processor.py</span></div>
+    <div class="stage"><div class="num">PO</div><h3>Orders</h3>
+      <p>Customer PO → expired-quote guard → one PO per winning vendor · a lapsed vendor quote is re-sourced, never committed at a stale cost</p>
+      <span class="mod">core/order_processing.py</span></div>
+    <div class="stage"><div class="num">LRN</div><h3>Learning</h3>
+      <p>Outcome labels → vendor scorecard → routing priority · learned contacts and lead management · transit lead times by origin</p>
+      <span class="mod">core/learning.py · vendor_scorecard.py · lead_manager.py</span></div>
+    <div class="stage human"><div class="num">HUMAN</div><h3>Dashboard</h3>
+      <p>Held quotes with the exact gate reason · vendor CRUD · sourcing review · orders · binds to localhost and refuses network exposure without auth</p>
+      <span class="mod">dashboard/app.py · templates/*.html</span></div>
+  </div>
+</div>
+
+<div class="lane rail">
+  <div class="lanehead"><h2>Rails</h2><span class="sub">what every stage leans on</span></div>
+  <div class="row">
+    <div class="stage"><div class="num">KNOW</div><h3>Knowledge</h3>
+      <p>Line card · brand aliases · cross-reference table · transit lead times · compliance watchlist · a trading playbook injected into every prompt</p>
+      <span class="mod">knowledge/</span></div>
+    <div class="stage"><div class="num">LLM</div><h3>Model client</h3>
+      <p>Classifier, extractor and cross-reference-engineer prompts · the model reasons, the code computes every number</p>
+      <span class="mod">llm/claude_client.py</span></div>
+    <div class="stage"><div class="num">CFG</div><h3>Configuration</h3>
+      <p>Typed settings · testing mode drafts to the dashboard and emails nobody · vendor cap, reply wait, margin floors, send caps</p>
+      <span class="mod">config/settings.py · pydantic</span></div>
+    <div class="stage"><div class="num">OPS</div><h3>Deploy</h3>
+      <p>systemd unit for an Ubuntu VPS · Windows service installer · env example · preflight check before first run</p>
+      <span class="mod">deploy/ · install_service.ps1 · scripts/preflight_check.py</span></div>
+    <div class="stage"><div class="num">TEST</div><h3>Tests</h3>
+      <p>174 assertions on consolidation scenarios: split sourcing, no-bid, FX, blended landed cost, packaging mismatch, stale quotes</p>
+      <span class="mod">tests/test_consolidation_scenarios.py</span></div>
+  </div>
+</div>
+
+<div class="strips">
+  <div class="strip"><h3>The human's whole job</h3>
+    <ul>
+      <li>Open the dashboard. Finish the lines the gate held, with the reason already on screen.</li>
+      <li>Add or rank vendors. Close deals as won, lost or silent so the scorecard learns.</li>
+      <li>Flip AGENT_MODE from testing to automatic when the drafts look right.</li>
+    </ul></div>
+  <div class="strip"><h3>By the numbers</h3>
+    <div class="nums">
+      <div><b>8</b><span>loop stages</span></div><div><b>1</b><span>process</span></div><div><b>54</b><span>authorised lines</span></div>
+      <div><b>174</b><span>test assertions</span></div><div><b>6</b><span>gate conditions</span></div><div><b>0</b><span>invented numbers</span></div>
+    </div></div>
+  <div class="strip"><h3>Stack</h3>
+    <div class="chips">
+      <span class="chip">Python</span><span class="chip">SQLite</span><span class="chip">Gmail API</span><span class="chip">LLM API</span>
+      <span class="chip">pydantic</span><span class="chip">FastAPI dashboard</span><span class="chip">systemd</span><span class="chip">Windows service</span>
+    </div></div>
+</div>
+
+<div class="foot">autonomous-agent · interactive version with stage-level detail: docs/architecture.html</div>
+</body>
+</html>

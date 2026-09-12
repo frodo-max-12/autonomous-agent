@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotations - SemiSales AI Agent</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 20px 40px; }
+        .header h1 { font-size: 24px; }
+        .nav { background: #16213e; padding: 0 40px; display: flex; gap: 0; }
+        .nav a { color: rgba(255,255,255,0.7); text-decoration: none; padding: 12px 20px; font-size: 14px; border-bottom: 2px solid transparent; }
+        .nav a:hover, .nav a.active { color: white; border-bottom-color: #4fc3f7; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 30px 40px; }
+        .section { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 10px 12px; font-size: 12px; text-transform: uppercase; color: #666; border-bottom: 2px solid #e0e0e0; }
+        td { padding: 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+        tr:hover { background: #f8f9fa; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+        .badge-draft { background: #f5f5f5; color: #666; }
+        .badge-awaiting_pricing { background: #fff3e0; color: #e65100; }
+        .badge-awaiting_approval { background: #fff8e1; color: #f57f17; }
+        .badge-approved { background: #e8f5e9; color: #2e7d32; }
+        .badge-sent { background: #e3f2fd; color: #1565c0; }
+        .badge-follow_up_1, .badge-follow_up_2 { background: #fff3e0; color: #e65100; }
+        .badge-negotiation_forwarded, .badge-awaiting_revised_pricing { background: #fff3e0; color: #e65100; }
+        .badge-revised_awaiting_approval { background: #fff8e1; color: #f57f17; }
+        .badge-revised_sent { background: #e3f2fd; color: #1565c0; }
+        .badge-po_received, .badge-po_forwarded { background: #e8f5e9; color: #2e7d32; }
+        .badge-sourcing_vendors { background: #ede7f6; color: #5e35b1; }
+        .badge-vendor_priced { background: #e0f2f1; color: #00695c; }
+        .badge-escalated { background: #fce4ec; color: #c62828; }
+        .badge-partially_priced { background: #fff8e1; color: #f57f17; }
+        .badge-won { background: #e8f5e9; color: #2e7d32; }
+        .badge-lost { background: #fce4ec; color: #c62828; }
+        .badge-expired { background: #f5f5f5; color: #999; }
+        .btn { padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none; color: white; }
+        .btn-pricing { background: #e65100; }
+        .btn-review { background: #f57c00; }
+        .btn-view { background: #1976d2; }
+        .btn-send { background: #2e7d32; }
+        .empty { text-align: center; padding: 40px; color: #999; }
+    </style>
+</head>
+<body>
+    <div class="header"><h1>SemiSales AI Agent</h1></div>
+    <div class="nav">
+        <a href="/">Dashboard</a>
+        <a href="/emails">All Emails</a>
+        <a href="/quotations">Quotations</a>
+        <a href="/orders">Orders</a>
+        <a href="/vendors">Vendors</a>
+        <a href="/leads">Leads</a>
+    </div>
+
+    <div class="container">
+        <div class="section">
+            <h2 style="font-size: 18px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">All Quotations</h2>
+            {% if quotations %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Quote #</th>
+                        <th>Customer</th>
+                        <th>Company</th>
+                        <th>Account</th>
+                        <th>Currency</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Sent</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for q in quotations %}
+                    <tr>
+                        <td><strong>{{ q.quote_number }}</strong></td>
+                        <td>{{ q.customer_name }}</td>
+                        <td>{{ q.customer_company or '-' }}</td>
+                        <td>{{ q.account | upper }}</td>
+                        <td>{{ q.currency }}</td>
+                        <td><span class="badge badge-{{ q.status.value }}">{{ q.status.value | replace('_', ' ') }}</span></td>
+                        <td>{{ q.created_at.strftime('%d %b %Y') if q.created_at else '-' }}</td>
+                        <td>{{ q.sent_at.strftime('%d %b %Y') if q.sent_at else '-' }}</td>
+                        <td>
+                            {% if q.status.value == 'awaiting_pricing' %}
+                                <a href="/quote/{{ q.id }}" class="btn btn-pricing">Add Pricing</a>
+                            {% elif q.status.value in ['sourcing_vendors', 'vendor_priced'] %}
+                                <a href="/sourcing/{{ q.id }}" class="btn" style="background:#5e35b1;">Sourcing</a>
+                            {% elif q.status.value in ['awaiting_approval', 'revised_awaiting_approval'] %}
+                                <a href="/quote/{{ q.id }}" class="btn btn-review">Review{% if q.status.value == 'revised_awaiting_approval' %} Revised{% endif %}</a>
+                                <a href="/sourcing/{{ q.id }}" class="btn" style="background:#5e35b1;">Sourcing</a>
+                            {% elif q.status.value == 'approved' %}
+                                <a href="/quote/{{ q.id }}" class="btn btn-send">Send</a>
+                                <a href="/sourcing/{{ q.id }}" class="btn" style="background:#5e35b1;">Vendors</a>
+                            {% elif q.status.value in ['awaiting_revised_pricing', 'negotiation_forwarded'] %}
+                                <a href="/quote/{{ q.id }}" class="btn btn-pricing">Negotiation R{{ q.negotiation_round or '?' }}</a>
+                                <a href="/sourcing/{{ q.id }}" class="btn" style="background:#5e35b1;">Vendors</a>
+                            {% elif q.status.value in ['po_received', 'po_forwarded'] %}
+                                <a href="/quote/{{ q.id }}" class="btn btn-send">PO</a>
+                                <a href="/sourcing/{{ q.id }}" class="btn" style="background:#5e35b1;">Vendors</a>
+                            {% else %}
+                                <a href="/quote/{{ q.id }}" class="btn btn-view">View</a>
+                                <a href="/sourcing/{{ q.id }}" class="btn" style="background:#5e35b1;">Vendors</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty">No quotations yet.</div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
